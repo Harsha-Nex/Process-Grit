@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zinc Line Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EEF1F0; --surface:#FFFFFF; --surface-2:#F5F7F6; --ink:#15201D; --ink-2:#4A5854; --muted:#76837F;
+  --line:#D8DFDC; --line-2:#E7ECEA;
+  --accent:#2D62A0; --accent-soft:#E2EBF5; --accent-ink:#1F4C80;
+  --good:#1F8A5B; --good-soft:#E1F2E9; --warn:#A86B0C; --warn-soft:#FBF0DA; --crit:#C23B2A; --crit-soft:#FBE4E0;
+  --band:rgba(31,138,91,.10);
+  --shadow:0 1px 2px rgba(21,32,29,.05),0 2px 8px rgba(21,32,29,.04);
+  --grid:rgba(45,98,160,.045);
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0A1016; --surface:#101922; --surface-2:#15212C; --ink:#E4ECF2; --ink-2:#A3B3C0; --muted:#6F8191;
+    --line:#223241; --line-2:#1A2733;
+    --accent:#4FB3F0; --accent-soft:#12283A; --accent-ink:#8FD0F7;
+    --good:#35C98A; --good-soft:#0F2E24; --warn:#F2B54A; --warn-soft:#33280F; --crit:#FF6B5A; --crit-soft:#3A1914;
+    --band:rgba(53,201,138,.13);
+    --grid:rgba(79,179,240,.05); --glow:0 0 0 1px rgba(79,179,240,.06),0 8px 24px rgba(0,0,0,.35);
+    --shadow:var(--glow);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+    --bg:#0A1016; --surface:#101922; --surface-2:#15212C; --ink:#E4ECF2; --ink-2:#A3B3C0; --muted:#6F8191;
+    --line:#223241; --line-2:#1A2733;
+    --accent:#4FB3F0; --accent-soft:#12283A; --accent-ink:#8FD0F7;
+    --good:#35C98A; --good-soft:#0F2E24; --warn:#F2B54A; --warn-soft:#33280F; --crit:#FF6B5A; --crit-soft:#3A1914;
+    --band:rgba(53,201,138,.13);
+    --grid:rgba(79,179,240,.05); --glow:0 0 0 1px rgba(79,179,240,.06),0 8px 24px rgba(0,0,0,.35);
+    --shadow:var(--glow);
+}
+*{box-sizing:border-box}
+body{background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.num,.mono{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono)}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:20px;padding:10px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:28px;height:28px;border-radius:6px;background:var(--accent);display:grid;place-items:center;flex:none}
+.mark svg{display:block}
+.brand b{font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:.01em}
+.brand small{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:-2px}
+.ctx{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-left:auto;font-size:12.5px;color:var(--ink-2)}
+.ctx span b{color:var(--ink);font-weight:600}
+.sim{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 10px;font-size:12px;background:var(--surface-2)}
+.sim i{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}
+.sim.paused i{background:var(--muted)}
+.sim button{border:0;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;cursor:pointer;font-size:12px}
+.sim button:hover{border-color:var(--accent);color:var(--accent-ink)}
+
+/* shell */
+.shell{display:grid;grid-template-columns:208px minmax(0,1fr);gap:0;min-height:calc(100vh - 60px)}
+nav.rail{border-right:1px solid var(--line);background:var(--surface);padding:16px 10px;display:flex;flex-direction:column;gap:2px}
+.rail h6{margin:14px 10px 6px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rail h6:first-child{margin-top:0}
+.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--ink-2);font-size:13.5px}
+.nav:hover{background:var(--surface-2);color:var(--ink)}
+.nav[aria-current="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+.nav .dot{margin-left:auto}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
+.dot.ok{background:var(--good)} .dot.warn{background:var(--warn)} .dot.crit{background:var(--crit)}
+.nav .count{margin-left:auto;font-size:11px;font-weight:600;background:var(--crit);color:#fff;border-radius:999px;padding:0 7px;line-height:18px}
+
+main{padding:20px 24px 40px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.pagehead{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.pagehead h1{font-family:var(--f-display);font-weight:700;font-size:28px;margin:0;line-height:1.1;text-wrap:balance}
+.pagehead p{margin:2px 0 0;color:var(--ink-2);max-width:62ch}
+.pagehead .right{margin-left:auto;font-size:12px;color:var(--muted)}
+
+.concept{display:flex;gap:14px;align-items:flex-start;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:10px;padding:12px 14px;color:var(--ink)}
+.concept b{font-weight:600}
+.concept ol{margin:4px 0 0;padding-left:18px;color:var(--ink-2)}
+.concept button{margin-left:auto;border:0;background:none;cursor:pointer;color:var(--accent-ink);font-size:12px;white-space:nowrap}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow);cursor:pointer;text-align:left}
+.tile:hover{border-color:var(--accent)}
+.tile .lab{font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.tile .lab .dot{margin-left:auto}
+.tile .val{font-family:var(--f-display);font-weight:600;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.005em}
+.tile .val small{font-family:var(--f-body);font-size:12px;color:var(--muted);font-weight:500;margin-left:3px;letter-spacing:0}
+.tile .sub{font-size:11.5px;color:var(--muted)}
+.tile svg{display:block;width:100%;height:30px}
+
+/* layout blocks */
+.row2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+.panel > header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-2)}
+.panel > header h2{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0;letter-spacing:.01em}
+.panel > header .hint{margin-left:auto;font-size:12px;color:var(--muted)}
+.panel .body{padding:14px 16px}
+
+/* line map */
+.linewrap{overflow-x:auto;padding:16px 16px 12px}
+.linemap{display:flex;align-items:stretch;gap:0}
+.st{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;cursor:pointer;border:0;background:none;padding:0 2px}
+.st .tank{width:100%;max-width:64px;height:54px;border:1.5px solid var(--line);border-top:0;border-radius:0 0 8px 8px;position:relative;overflow:hidden;background:var(--surface-2)}
+.st .liq{position:absolute;left:0;right:0;bottom:0;height:70%;background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.st.warn .tank{border-color:var(--warn)} .st.warn .liq{background:color-mix(in srgb,var(--warn) 22%,transparent)}
+.st.crit .tank{border-color:var(--crit)} .st.crit .liq{background:color-mix(in srgb,var(--crit) 22%,transparent)}
+.st .no{font-family:var(--f-mono);font-size:10px;color:var(--muted)}
+.st .nm{font-size:11px;line-height:1.2;text-align:center;color:var(--ink-2);min-height:27px}
+.st .rd{font-family:var(--f-mono);font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.st:hover .tank{border-color:var(--accent)}
+.st.zinc{flex:2.6 1 0}
+.st.zinc .tank{max-width:none;display:flex;gap:4px;padding:6px 6px 0;align-items:flex-end}
+.brl{flex:1;height:34px;border-radius:5px;background:color-mix(in srgb,var(--accent) 22%,var(--surface));position:relative;z-index:1;display:grid;place-items:center;font-family:var(--f-mono);font-size:9.5px;color:var(--accent-ink)}
+.brl.warn{background:var(--warn-soft);color:var(--warn);outline:1.5px solid var(--warn)}
+.brl.idle{background:var(--surface);color:var(--muted);outline:1px dashed var(--line)}
+.flow{position:absolute;top:27px;right:-4px;width:8px;height:2px;background:var(--line)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);padding:0 16px 12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* attention list */
+.alist{list-style:none;margin:0;padding:6px 8px}
+.alist li{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;align-items:start;padding:10px 8px;border-radius:8px;cursor:pointer}
+.alist li:hover{background:var(--surface-2)}
+.alist li + li{border-top:1px solid var(--line-2)}
+.sev{width:4px;align-self:stretch;border-radius:2px}
+.sev.crit{background:var(--crit)} .sev.warn{background:var(--warn)} .sev.info{background:var(--accent)}
+.alist .t{font-weight:600;font-size:13.5px}
+.alist .d{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.alist .act{font-size:12px;color:var(--ink);margin-top:5px}
+.alist .act b{font-weight:600;color:var(--accent-ink)}
+.alist .when{font-size:11px;color:var(--muted);white-space:nowrap;font-family:var(--f-mono)}
+.empty{padding:16px;color:var(--muted)}
+
+/* modules grid */
+.sectitle{display:flex;align-items:baseline;gap:10px}
+.sectitle h2{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0}
+.sectitle span{font-size:12px;color:var(--muted)}
+.mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.mod{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;cursor:pointer;text-align:left;padding:0;overflow:hidden}
+.mod:hover{border-color:var(--accent)}
+.mod header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
+.mod header h3{margin:0;font-family:var(--f-display);font-weight:600;font-size:17px}
+.mod header p{margin:0;font-size:11.5px;color:var(--muted)}
+.chip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--good-soft);color:var(--good)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.crit{background:var(--crit-soft);color:var(--crit)}
+.chip svg{width:11px;height:11px}
+.mod .rows{padding:2px 14px 6px;display:flex;flex-direction:column}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:7px 0;border-top:1px solid var(--line-2);align-items:center}
+.mrow .k{font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:7px;min-width:0}
+.mrow .v{font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums;text-align:right}
+.mrow .v small{color:var(--muted)}
+.band{grid-column:1 / -1;height:6px;border-radius:3px;background:var(--surface-2);position:relative}
+.band .ok{position:absolute;top:0;bottom:0;background:var(--band);border-left:1px solid color-mix(in srgb,var(--good) 45%,transparent);border-right:1px solid color-mix(in srgb,var(--good) 45%,transparent)}
+.band .pin{position:absolute;top:-2px;width:3px;height:10px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+.band .pin.warn{background:var(--warn)} .band .pin.crit{background:var(--crit)}
+.mod footer{margin-top:auto;padding:9px 14px;border-top:1px solid var(--line-2);font-size:12px;color:var(--accent-ink);display:flex;justify-content:space-between;background:var(--surface-2)}
+.mod footer span:first-child{color:var(--muted)}
+
+.split{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:18px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+.split .mods{grid-template-columns:repeat(2,minmax(0,1fr))}
+.more{display:block;width:100%;border:0;border-top:1px solid var(--line-2);background:var(--surface-2);padding:10px;color:var(--accent-ink);cursor:pointer;font-size:12.5px;border-radius:0 0 12px 12px}
+.linemap{min-width:760px}
+/* detail */
+.back{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12.5px}
+.back:hover{border-color:var(--accent)}
+.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
+.plist{display:flex;flex-direction:column;padding:6px 8px 10px}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:10px 8px;border-radius:8px;cursor:pointer;border:0;background:none;text-align:left;width:100%}
+.prow + .prow{border-top:1px solid var(--line-2)}
+.prow:hover{background:var(--surface-2)}
+.prow[aria-pressed="true"]{background:var(--accent-soft)}
+.prow .k{font-size:13px;display:flex;gap:8px;align-items:center}
+.prow .spec{font-size:11px;color:var(--muted);font-family:var(--f-mono)}
+.prow .v{font-family:var(--f-display);font-weight:600;font-size:20px;text-align:right;font-variant-numeric:tabular-nums}
+.prow .v small{font-family:var(--f-body);font-size:11px;color:var(--muted);font-weight:500;margin-left:2px}
+.chartbox{position:relative;padding:8px 12px 12px}
+.chartbox svg{display:block;width:100%;height:auto}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-110%);font-variant-numeric:tabular-nums}
+.tip[hidden]{display:none}
+.axis text{fill:var(--muted);font-size:10.5px;font-family:var(--f-mono)}
+table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+table.t th{text-align:left;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--line)}
+table.t td{padding:9px 10px;border-bottom:1px solid var(--line-2);font-variant-numeric:tabular-nums}
+table.t td.r,table.t th.r{text-align:right}
+table.t tr:last-child td{border-bottom:0}
+.tscroll{overflow-x:auto}
+.bars{display:flex;flex-direction:column;gap:9px;padding:14px 16px}
+.bar{display:grid;grid-template-columns:130px minmax(0,1fr) 36px;gap:10px;align-items:center;font-size:12.5px}
+.bar .tr{height:12px;background:var(--surface-2);border-radius:0 4px 4px 0;position:relative}
+.bar .fl{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:0 4px 4px 0}
+.bar .n{font-family:var(--f-mono);text-align:right}
+.note{font-size:12px;color:var(--muted)}
+footer.page{font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
+
+
+/* feel: live motion + theme toggle */
+.theme{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface-2)}
+.theme button{border:0;background:none;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--ink-2);display:inline-flex;gap:5px;align-items:center}
+.theme button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.theme svg{width:13px;height:13px}
+.sim i{box-shadow:0 0 0 0 var(--good);animation:pulse 1.8s ease-out infinite}
+.sim.paused i{animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 60%,transparent)}100%{box-shadow:0 0 0 7px transparent}}
+.shiftbar{display:flex;align-items:center;gap:10px;padding:0 20px 8px;font-size:11.5px;color:var(--muted)}
+.shiftbar .trk{flex:1;height:4px;border-radius:2px;background:var(--line-2);position:relative;overflow:hidden;max-width:520px}
+.shiftbar .fil{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:2px}
+.shiftbar b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.flow{height:2px;background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 8px);background-size:16px 2px;animation:flow 1s linear infinite;opacity:.7}
+@keyframes flow{to{background-position:16px 0}}
+.st .liq::before{content:"";position:absolute;left:-50%;right:-50%;top:-3px;height:6px;border-radius:50%;background:inherit;animation:wave 3.5s ease-in-out infinite}
+@keyframes wave{50%{transform:translateX(12%)}}
+.brl:not(.idle)::after{content:"";position:absolute;inset:3px;border-radius:4px;background:repeating-linear-gradient(90deg,transparent 0 5px,color-mix(in srgb,var(--accent) 22%,transparent) 5px 6px);animation:spin 1.6s linear infinite;background-size:12px 100%}
+@keyframes spin{to{background-position:12px 0}}
+.tile.crit,.mod.crit{border-color:color-mix(in srgb,var(--crit) 55%,var(--line))}
+.tile.crit{box-shadow:0 0 0 1px color-mix(in srgb,var(--crit) 25%,transparent),var(--shadow)}
+.val.bump{animation:bump .6s ease-out}
+@keyframes bump{from{color:var(--accent-ink)}}
+@media (max-width:900px){.shiftbar{padding:0 16px 8px}}
+@media (max-width:1180px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .split{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav.rail{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px 12px;gap:4px}
+  .rail h6{display:none}
+  .nav{width:auto;white-space:nowrap;flex:none}
+  .nav .dot,.nav .count{margin-left:6px}
+  .row2,.detail{grid-template-columns:minmax(0,1fr)}
+  main{padding:16px 16px 32px}
+  .top-in{padding:10px 16px}
+}
+@media (max-width:560px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mods,.split .mods{grid-template-columns:minmax(0,1fr)}
+  .ctx{margin-left:0;gap:10px}
+  .tile .val{font-size:26px}
+  .bar{grid-template-columns:100px minmax(0,1fr) 30px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 12h12M4 12V6h8v6M6 6V3h4v3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+      <div><b>ProcessGrit</b><small>Plating intelligence · concept</small></div>
+    </div>
+    <div class="ctx">
+      <span>Plant <b>Zinc Protech 01</b></span>
+      <span>Line <b>Barrel Zn-2 · alkaline</b></span>
+      <span>Shift <b>B</b> · <b class="mono" id="clock">--:--</b></span>
+      <span class="theme" role="group" aria-label="Theme"><button type="button" data-theme-set="light" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M3.4 12.6l1.3-1.3M11.3 4.7l1.3-1.3" stroke-linecap="round"/></svg>Day</button><button type="button" data-theme-set="dark" aria-pressed="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 9.8A5.5 5.5 0 0 1 6.2 3a5.5 5.5 0 1 0 6.8 6.8z" stroke-linejoin="round"/></svg>Night</button></span>
+      <span class="sim" id="sim"><i></i><span id="simtxt">Demo data · simulated</span><button id="simbtn" type="button">Pause</button></span>
+    </div>
+  </div>
+  <div class="shiftbar"><span>Shift B · 14:00–22:00</span><span class="trk"><span class="fil" id="shfill"></span></span><span>Plated <b id="shdone">–</b> of <b>9,800 kg</b> plan</span></div>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Sections"></nav>
+  <main id="main"></main>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- metric model ---------- */
+// lo/hi = acceptable spec; min/max = display scale; sd = drift per tick; tgt = drift target (mean reversion)
+const M = {
+  health:{l:"Plant health",u:"/100",v:87,lo:80,hi:100,min:60,max:100,sd:.7,d:0},
+  thru:{l:"Throughput",u:"kg/h",v:1240,lo:1150,hi:1450,min:1000,max:1500,sd:14,d:0},
+  fpy:{l:"First-pass yield",u:"%",v:97.8,lo:96.5,hi:100,min:94,max:100,sd:.12,d:1},
+  thk:{l:"Coating thickness",u:"µm",v:9.4,lo:8,hi:12,min:6,max:14,sd:.12,d:1},
+  kwh:{l:"Energy",u:"kWh/kg",v:.62,lo:0,hi:.70,min:.4,max:.9,sd:.006,d:2},
+  zn:{l:"Zinc metal",u:"g/L",v:10.2,lo:8,hi:12,min:6,max:14,sd:.08,d:1},
+  naoh:{l:"Caustic soda (NaOH)",u:"g/L",v:128,lo:120,hi:140,min:100,max:160,sd:.8,d:0},
+  carb:{l:"Sodium carbonate",u:"g/L",v:55.5,lo:0,hi:60,min:20,max:80,sd:.35,d:1,up:.06},
+  brt:{l:"Brightener level",u:"% of target",v:92,lo:85,hi:110,min:70,max:120,sd:.6,d:0},
+  btemp:{l:"Zinc bath temp",u:"°C",v:26.5,lo:22,hi:30,min:18,max:34,sd:.15,d:1},
+  degt:{l:"Degrease temp",u:"°C",v:64,lo:60,hi:75,min:50,max:80,sd:.4,d:0},
+  hcl:{l:"Pickle HCl",u:"%",v:11.2,lo:8,hi:15,min:5,max:18,sd:.08,d:1},
+  fe:{l:"Iron in pickle",u:"g/L",v:71,lo:0,hi:80,min:30,max:100,sd:.4,d:0,up:.08},
+  pph:{l:"Passivate pH",u:"pH",v:1.92,lo:1.6,hi:2.2,min:1.2,max:2.6,sd:.012,d:2},
+  ptemp:{l:"Passivate temp",u:"°C",v:28,lo:25,hi:35,min:20,max:40,sd:.2,d:1},
+  cd:{l:"Current density (avg)",u:"A/dm²",v:1.05,lo:.5,hi:1.5,min:.2,max:2,sd:.02,d:2},
+  volt:{l:"Rectifier voltage (avg)",u:"V",v:7.4,lo:5,hi:9.5,min:3,max:12,sd:.06,d:1},
+  ripple:{l:"Rectifier ripple",u:"%",v:3.1,lo:0,hi:5,min:0,max:8,sd:.05,d:1},
+  dp:{l:"Filter pump ΔP",u:"bar",v:1.02,lo:0,hi:1.2,min:0,max:1.6,sd:.008,d:2,up:.004},
+  anode:{l:"Zinc anode fill",u:"%",v:64,lo:40,hi:100,min:0,max:100,sd:.2,d:0,up:-.05},
+  oven:{l:"Bake oven temp",u:"°C",v:204,lo:190,hi:220,min:170,max:240,sd:.8,d:0},
+  znkg:{l:"Zinc used",u:"g/kg parts",v:14.6,lo:0,hi:16,min:8,max:20,sd:.08,d:1},
+  chem:{l:"Chemical cost",u:"₹/kg",v:4.8,lo:0,hi:5.5,min:3,max:7,sd:.03,d:1},
+  cost:{l:"Total plating cost",u:"₹/kg",v:11.6,lo:0,hi:13,min:9,max:14,sd:.06,d:1},
+  eph:{l:"ETP outlet pH",u:"pH",v:7.6,lo:6.5,hi:8.5,min:5.5,max:9.5,sd:.03,d:1},
+  ezn:{l:"Zinc in discharge",u:"mg/L",v:1.2,lo:0,hi:5,min:0,max:6,sd:.04,d:1},
+  tss:{l:"Suspended solids",u:"mg/L",v:42,lo:0,hi:100,min:0,max:120,sd:1,d:0},
+  water:{l:"Water use",u:"L/kg",v:6.8,lo:0,hi:8,min:4,max:10,sd:.05,d:1}
+};
+const HN = 40;
+function rnd(){ return (Math.random()+Math.random()+Math.random()-1.5)/1.5; }
+for (const k in M){
+  const m=M[k]; m.base=m.v; m.h=[];
+  let v=m.v - (m.up||0)*HN;
+  for(let i=0;i<HN;i++){ v += rnd()*m.sd + (m.up||0) + (m.base - v)*.08*(m.up?0:1); m.h.push(clamp(v,m.min,m.max)); }
+  m.h[HN-1]=m.v;
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function st(m){
+  const v=m.v; if(v<m.lo||v>m.hi) return "crit";
+  const span=(m.hi-m.lo)||1, e=.08*span;
+  const lowEdge = m.lo>0 || m.min>=m.lo; // one-sided specs only warn on the side that matters
+  if((v-m.lo<e && m.lo>m.min) || (m.hi-v<e && m.hi<m.max)) return "warn";
+  return "ok";
+}
+function fmt(m,v){ v = v==null?m.v:v; return v.toLocaleString("en-IN",{minimumFractionDigits:m.d,maximumFractionDigits:m.d}); }
+function specTxt(m){
+  if(m.lo<=m.min || m.lo===0) return "≤ "+fmt(m,m.hi);
+  if(m.hi>=m.max) return "≥ "+fmt(m,m.lo);
+  return fmt(m,m.lo)+"–"+fmt(m,m.hi);
+}
+
+/* ---------- barrels ---------- */
+const PARTS=["M10×1.25 flange bolt · 10.9","M8 hex nut · Cl 8","M12 stud · 8.8","M6 weld nut","M10 hex bolt · 8.8","M14 wheel nut · 10"];
+const B=[1,2,3,4,5,6].map((n,i)=>({id:"Z"+n,part:PARTS[i],kg:[180,220,160,200,0,190][i],amp:[410,470,380,445,0,430][i],left:[14,6,22,31,0,9][i],cd:[1.02,1.12,.98,1.05,0,1.46][i]}));
+B[4].idle=true;
+
+/* ---------- modules ---------- */
+const MODS=[
+  {id:"process",n:"Process",p:"Barrels & rectifiers",keys:["cd","volt","ripple"],extra:"barrels"},
+  {id:"chem",n:"Chemistry",p:"Bath analysis vs spec",keys:["zn","naoh","carb","brt","btemp"],extra:"titration"},
+  {id:"pretreat",n:"Pre-treatment & finish",p:"Degrease, pickle, passivate, bake",keys:["degt","hcl","fe","pph","ptemp","oven"]},
+  {id:"quality",n:"Quality",p:"Thickness, yield, salt spray",keys:["thk","fpy"],extra:"quality"},
+  {id:"maint",n:"Maintenance",p:"Filters, anodes, PM schedule",keys:["dp","anode","ripple"],extra:"pm"},
+  {id:"cost",n:"Energy & cost",p:"Per kg of parts plated",keys:["kwh","znkg","chem","cost"]},
+  {id:"etp",n:"Effluent (ETP)",p:"Discharge vs consent limits",keys:["eph","ezn","tss","water"]}
+];
+const KPI=["health","thru","fpy","thk","kwh"];
+const ACT={
+  carb:["Carbonate building up in zinc bath","Plan carbonate removal (freeze-out or dilution) before it passes 60 g/L. High carbonate causes burning and lower efficiency."],
+  fe:["Iron is high in the HCl pickle","Schedule a partial pickle dump. High iron slows pickling and carries iron into the zinc bath."],
+  dp:["Filter pump pressure rising","Change the filter cartridge on the zinc tank this shift. A clogged filter lets particles roughen the deposit."],
+  anode:["Zinc anode baskets running low","Top up zinc balls in the anode baskets so zinc metal holds at 8–12 g/L."],
+  brt:["Brightener below target","Add brightener as per ampere-hour meter. Low brightener gives a dull, hazy finish."],
+  zn:["Zinc metal off spec","Adjust anode area or dilute. Zinc metal controls plating speed and throwing power."],
+  naoh:["Caustic off spec","Add caustic soda as per last titration."],
+  thk:["Coating thickness near spec limit","Check current density and time on the running barrels."],
+  fpy:["First-pass yield dropping","Open quality, check today's defect Pareto."],
+  cd:["Current density high on a barrel","Check load weight and set point on the flagged barrel."],
+  ripple:["Rectifier ripple rising","Check rectifier R3 thyristor and cooling."],
+  oven:["Bake oven off temperature","Hold 10.9 parts until oven is back in 190–220 °C band."],
+  btemp:["Zinc bath temperature off band","Check chiller/heater on zinc tank."],
+  pph:["Passivate pH drifting","Adjust with nitric acid or caustic as per supplier sheet."],
+  hcl:["Pickle acid strength off","Replenish HCl."], degt:["Degreaser temperature off","Check heater and thermostat."],
+  ptemp:["Passivate temperature off","Check tank heater."], volt:["Rectifier voltage abnormal","Check contacts and bus bars."],
+  kwh:["Energy per kg is high","Check idle rectifiers and oven door losses."], znkg:["Zinc consumption high","Check drag-out and thickness overshoot."],
+  chem:["Chemical cost above target","Review additions log against ampere-hours."], cost:["Plating cost above target","Open energy & cost breakdown."],
+  eph:["ETP outlet pH off consent","Adjust neutralisation dosing."], ezn:["Zinc in discharge high","Check clarifier and dosing."],
+  tss:["Suspended solids high","Check clarifier sludge level."], water:["Water use high","Check rinse flow valves."],
+  health:["Plant health low","See open issues."], thru:["Throughput below plan","Check idle barrels and loading."]
+};
+const STATIC_ALERTS=[
+  {s:"info",t:"Barrel Z5 idle for 18 min",d:"No load assigned. Loading bay shows 3 lots waiting.",a:"Assign lot 2241 (M10 hex bolt) to Z5.",mod:"process",w:"18m"},
+  {s:"warn",t:"Salt spray lot B-2231 at 48 h of 72 h",d:"Trivalent blue passivate, M10×1.25 flange bolt 10.9. No white rust yet.",a:"Inspect at 72 h and record result.",mod:"quality",w:"48h"}
+];
+const PM=[
+  ["Zinc tank filter cartridge","Due today","warn"],["Rectifier R3 IR / thyristor check","Due in 2 days","ok"],
+  ["Bake oven thermocouple calibration","12 Oct","ok"],["Barrel Z2 door gasket","Overdue 1 day","crit"],["Anode bag inspection","19 Oct","ok"]
+];
+const DEFECTS=[["Dull / hazy",14],["Burning at edges",9],["Blisters",5],["Stains",4],["Low thickness",3],["Poor adhesion",1]];
+const SALT=[["B-2231","M10×1.25 flange bolt","72 h NSS","48 h · no white rust","warn"],["B-2228","M8 hex nut","96 h NSS","Passed 96 h","ok"],["B-2224","M12 stud","72 h NSS","Passed 72 h","ok"],["B-2219","M6 weld nut","120 h NSS","Failed at 104 h · white rust","crit"]];
+
+/* ---------- theme ---------- */
+function setTheme(t){ document.documentElement.setAttribute("data-theme",t);
+  document.querySelectorAll("[data-theme-set]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.themeSet===t)));
+  try{localStorage.setItem("pg_theme",t);}catch(e){} }
+let t0="dark"; try{ t0=localStorage.getItem("pg_theme")||"dark"; }catch(e){}
+setTheme(t0);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-theme-set]"); if(b) setTheme(b.dataset.themeSet);});
+let plated=5120;
+/* ---------- state ---------- */
+const S={view:"overview",sel:null,hover:null,paused:false,showConcept:true};
+try{ if(localStorage.getItem("pg_concept_hide")==="1") S.showConcept=false; }catch(e){}
+
+function modStatus(mod){ let w=0,c=0; mod.keys.forEach(k=>{const s=st(M[k]); if(s==="crit")c++; else if(s==="warn")w++;});
+  if(mod.id==="maint"){ PM.forEach(p=>{ if(p[2]==="crit")c++; else if(p[2]==="warn")w++; }); }
+  if(mod.id==="process" && B.some(b=>b.cd>1.4))w++;
+  return c?"crit":w?"warn":"ok"; }
+function alerts(){
+  const out=[];
+  const seen=new Set();
+  MODS.concat([{id:"overview",keys:KPI}]).forEach(mod=>mod.keys.forEach(k=>{
+    if(seen.has(k)||k==="health")return; seen.add(k);
+    const m=M[k], s=st(m); if(s==="ok")return;
+    const a=ACT[k]||[m.l+" off spec","Check."];
+    out.push({s, t:a[0], d:m.l+" "+fmt(m)+" "+m.u+" · spec "+specTxt(m), a:a[1], mod:(MODS.find(x=>x.keys.includes(k))||{id:"overview"}).id, w:"now"});
+  }));
+  const hot=B.find(b=>b.cd>1.4);
+  if(hot) out.push({s:"warn",t:"Barrel "+hot.id+" current density high",d:hot.cd.toFixed(2)+" A/dm² on "+hot.part+". Spec 0.5–1.4 for barrel zinc.",a:"Check load weight. Under-loaded barrel burns the parts.",mod:"process",w:"3m"});
+  PM.filter(p=>p[2]!=="ok").forEach(p=>out.push({s:p[2],t:p[0],d:"Preventive maintenance · "+p[1],a:p[2]==="crit"?"Replace before next Z2 load.":"Plan within this shift.",mod:"maint",w:"PM"}));
+  out.push(...STATIC_ALERTS);
+  const rank={crit:0,warn:1,info:2};
+  return out.sort((a,b)=>rank[a.s]-rank[b.s]);
+}
+
+/* ---------- small renderers ---------- */
+const ICON={ok:'<svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.2 2.2 4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn:'<svg viewBox="0 0 12 12"><path d="M6 2.5v4.2M6 9.2v.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  crit:'<svg viewBox="0 0 12 12"><path d="M3.3 3.3l5.4 5.4M8.7 3.3L3.3 8.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'};
+const WORD={ok:"In spec",warn:"Watch",crit:"Action"};
+function chip(s){return `<span class="chip ${s}">${ICON[s]}${WORD[s]}</span>`;}
+function spark(m){
+  const w=160,h=30,p=2,a=m.h, lo=Math.min(...a), hi=Math.max(...a), r=(hi-lo)||1;
+  const x=i=>p+i*(w-2*p)/(a.length-1), y=v=>h-p-(v-lo)/r*(h-2*p-4);
+  const pts=a.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ");
+  const s=st(m), col=s==="ok"?"var(--accent)":`var(--${s})`;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polygon points="${p},${h} ${pts} ${w-p},${h}" fill="${col}" opacity=".10"/><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><circle cx="${x(a.length-1)}" cy="${y(a[a.length-1])}" r="2.4" fill="${col}"/></svg>`;
+}
+function band(m){
+  const sc=v=>((clamp(v,m.min,m.max)-m.min)/(m.max-m.min)*100);
+  const s=st(m);
+  return `<div class="band" aria-hidden="true"><div class="ok" style="left:${sc(m.lo)}%;width:${sc(m.hi)-sc(m.lo)}%"></div><div class="pin ${s==="ok"?"":s}" style="left:${sc(m.v)}%"></div></div>`;
+}
+
+/* ---------- rail ---------- */
+function renderRail(){
+  const al=alerts(), nc=al.filter(a=>a.s==="crit").length;
+  let h=`<h6>Monitor</h6>`;
+  h+=nav("overview","Overview","");
+  h+=nav("line","Line map","");
+  h+=nav("alerts","Needs attention",`<span class="count">${al.filter(a=>a.s!=="info").length}</span>`);
+  h+=`<h6>Modules</h6>`;
+  MODS.forEach(m=>{h+=nav(m.id,m.n,`<span class="dot ${modStatus(m)}"></span>`);});
+  document.getElementById("rail").innerHTML=h;
+}
+function nav(id,label,tail){return `<button class="nav" type="button" data-go="${id}" aria-current="${S.view===id}">${label}${tail}</button>`;}
+
+/* ---------- views ---------- */
+function head(title,sub,right){return `<div class="pagehead"><div><h1>${title}</h1><p>${sub}</p></div>${right?`<div class="right">${right}</div>`:""}</div>`;}
+
+function vOverview(){
+  const al=alerts();
+  let h=head("Command center","Line status at a glance. Open any box for its detail.",`Updated <span class="mono">${timeStr()}</span>`);
+  if(S.showConcept) h+=`<div class="concept"><div><b>Concept layout for discussion.</b> Three levels, so nobody reads everything at once:
+    <ol><li>Overview: five numbers and what needs action</li><li>Module boxes: one box per area with its own status</li><li>Detail: open a box for trends, specs and records</li></ol></div><button type="button" data-hideconcept>Hide</button></div>`;
+  h+=`<section class="kpis" aria-label="Key numbers">`+KPI.map(k=>{const m=M[k],s=st(m);
+    const mod=(MODS.find(x=>x.keys.includes(k))||{}).id||"overview";
+    return `<button class="tile ${s}" type="button" data-go="${mod}" data-sel="${k}"><span class="lab">${m.l}<span class="dot ${s}" title="${WORD[s]}"></span></span><span class="val">${fmt(m)}<small>${m.u}</small></span>${spark(m)}<span class="sub">Spec ${specTxt(m)}</span></button>`;}).join("")
+    +(()=>{const n=al.filter(a=>a.s!=="info").length,c=al.filter(a=>a.s==="crit").length;
+      return `<button class="tile" type="button" data-go="alerts"><span class="lab">Open issues<span class="dot ${c?"crit":n?"warn":"ok"}"></span></span><span class="val">${n}<small>${c} need action now</small></span><span class="sub" style="margin-top:auto">Tap to see actions</span></button>`;})()
+    +`</section>`;
+  h+=`<section class="panel"><header><h2>Line map</h2><span class="hint">Tank order as parts travel · tap a tank</span></header>${lineMap()}</section>`;
+  h+=`<div class="split"><div class="stack"><div class="sectitle"><h2>Modules</h2><span>Each area in its own box</span></div><section class="mods">`+MODS.map(modCard).join("")+`</section></div>
+    <div class="stack"><div class="sectitle"><h2>Needs attention</h2><span>${al.length} items · worst first</span></div><section class="panel">${alertList(al.slice(0,6))}${al.length>6?`<button class="more" type="button" data-go="alerts">See all ${al.length} →</button>`:""}</section></div></div>`;
+  h+=pageFoot();
+  return h;
+}
+function modCard(mod){
+  const s=modStatus(mod), keys=mod.keys.slice(0,3);
+  const worst=mod.keys.map(k=>M[k]).filter(m=>st(m)!=="ok").length;
+  return `<button class="mod ${s}" type="button" data-go="${mod.id}"><header><div><h3>${mod.n}</h3><p>${mod.p}</p></div>${chip(s)}</header>
+  <div class="rows">${keys.map(k=>{const m=M[k];return `<div class="mrow"><span class="k"><span class="dot ${st(m)}"></span>${m.l}</span><span class="v">${fmt(m)} <small>${m.u}</small></span>${band(m)}</div>`;}).join("")}</div>
+  <footer><span>${mod.keys.length} parameters · ${worst?worst+" off target":"all in band"}</span><span>Open →</span></footer></button>`;
+}
+function lineMap(){
+  const S1=[["01","Soak degrease",["degt"]],["02","Rinse",[]],["03","HCl pickle",["hcl","fe"]],["04","Rinse",[]],["05","Electro-clean",[]],["06","Rinse",[]],
+    ["07","Zinc plating · 6 barrels",["zn","naoh","carb","brt","btemp"],"zinc"],["08","Drag-out rinse",[]],["09","Nitric dip",[]],["10","Trivalent passivate",["pph","ptemp"]],["11","Sealer",[]],["12","Spin dryer",[]],["13","Bake 200 °C",["oven"]]];
+  const html=S1.map(([no,nm,ks,cls],i)=>{
+    let s="ok"; ks.forEach(k=>{const x=st(M[k]); if(x==="crit")s="crit"; else if(x==="warn"&&s!=="crit")s="warn";});
+    const rd=ks.length?fmt(M[ks[0]])+" "+M[ks[0]].u.replace(" of target",""):"";
+    const inner=cls==="zinc"?B.map(b=>`<span class="brl ${b.idle?"idle":b.cd>1.4?"warn":""}" title="${b.id} · ${b.idle?"idle":b.part}">${b.id}</span>`).join(""):`<span class="liq"></span>`;
+    const target=cls==="zinc"?"chem":ks.length?(["degt","hcl","fe","pph","ptemp","oven"].includes(ks[0])?"pretreat":"chem"):"pretreat";
+    return `<button type="button" class="st ${s} ${cls||""}" data-go="${cls==="zinc"?"process":target}" title="${nm}"><span class="no">${no}</span><span class="tank">${inner}</span><span class="nm">${nm}</span><span class="rd">${rd||"&nbsp;"}</span>${i<S1.length-1?'<span class="flow"></span>':""}</button>`;
+  }).join("");
+  return `<div class="linewrap"><div class="linemap">${html}</div></div><div class="legend"><span><span class="dot ok"></span>In spec</span><span><span class="dot warn"></span>Watch</span><span><span class="dot crit"></span>Action</span><span class="mono">Z1–Z6 = plating barrels</span></div>`;
+}
+function alertList(al){
+  if(!al.length) return `<div class="empty">Nothing needs attention right now.</div>`;
+  return `<ul class="alist">`+al.map(a=>`<li data-go="${a.mod}" tabindex="0"><span class="sev ${a.s}"></span><div><div class="t">${a.t}</div><div class="d">${a.d}</div><div class="act"><b>Do:</b> ${a.a}</div></div><span class="when">${a.w}</span></li>`).join("")+`</ul>`;
+}
+function vAlerts(){
+  const al=alerts();
+  return head("Needs attention","Every open issue, sorted by severity. Each one says what to do.")+`<section class="panel">${alertList(al)}</section>`+pageFoot();
+}
+function vLine(){
+  return head("Line map","13 stations in the order parts travel. Tap a tank to open its module.")+`<section class="panel">${lineMap()}</section>
+  <section class="panel"><header><h2>Barrels now</h2><span class="hint">Zinc tank, barrels Z1–Z6</span></header>${barrelTable()}</section>`+pageFoot();
+}
+function barrelTable(){
+  return `<div class="tscroll"><table class="t"><thead><tr><th>Barrel</th><th>Part</th><th class="r">Load kg</th><th class="r">Current A</th><th class="r">A/dm²</th><th class="r">Time left</th><th>Status</th></tr></thead><tbody>`+
+  B.map(b=>b.idle?`<tr><td class="mono">${b.id}</td><td style="color:var(--muted)">Idle · waiting for load</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td><span class="chip warn">${ICON.warn}Idle</span></td></tr>`:
+  `<tr><td class="mono">${b.id}</td><td>${b.part}${/10\.9|· 10$/.test(b.part)?' <span class="note">· bake required</span>':""}</td><td class="r">${b.kg}</td><td class="r">${Math.round(b.amp)}</td><td class="r">${b.cd.toFixed(2)}</td><td class="r">${Math.max(0,Math.round(b.left))} min</td><td>${chip(b.cd>1.4?"warn":"ok")}</td></tr>`).join("")+`</tbody></table></div>`;
+}
+function vModule(mod){
+  if(!S.sel || !mod.keys.includes(S.sel)) S.sel=mod.keys.find(k=>st(M[k])!=="ok")||mod.keys[0];
+  const m=M[S.sel];
+  let h=`<div><button class="back" type="button" data-go="overview">← Overview</button></div>`;
+  h+=head(mod.n,mod.p+". Tap a parameter to see its trend.",chip(modStatus(mod)));
+  h+=`<div class="detail"><section class="panel"><header><h2>Parameters</h2><span class="hint">Green band = spec</span></header><div class="plist">`+
+    mod.keys.map(k=>{const x=M[k];return `<button type="button" class="prow" data-sel="${k}" aria-pressed="${k===S.sel}"><span class="k"><span class="dot ${st(x)}"></span>${x.l}</span><span class="v">${fmt(x)}<small>${x.u}</small></span>${band(x)}<span class="spec">Spec ${specTxt(x)} ${x.u}</span></button>`;}).join("")+`</div></section>
+    <section class="panel"><header><h2>${m.l}</h2><span class="hint">Last ${HN} readings · ${m.u}</span></header><div class="chartbox" id="chartbox">${trend(m)}</div>
+    <div class="body note" style="padding-top:0">${(ACT[S.sel]||["",""])[1]}</div></section></div>`;
+  if(mod.extra==="barrels") h+=`<section class="panel"><header><h2>Barrels now</h2><span class="hint">Barrel zinc spec 0.5–1.4 A/dm²</span></header>${barrelTable()}</section>`;
+  if(mod.extra==="titration") h+=`<section class="panel"><header><h2>Lab titrations today</h2><span class="hint">Next due 18:00</span></header><div class="tscroll"><table class="t"><thead><tr><th>Time</th><th class="r">Zn g/L</th><th class="r">NaOH g/L</th><th class="r">Na₂CO₃ g/L</th><th>By</th><th>Addition made</th></tr></thead><tbody>
+    <tr><td class="mono">06:10</td><td class="r">10.4</td><td class="r">131</td><td class="r">54.8</td><td>R. Kumar</td><td>None</td></tr>
+    <tr><td class="mono">10:05</td><td class="r">10.1</td><td class="r">126</td><td class="r">55.2</td><td>S. Yadav</td><td>NaOH 8 kg</td></tr>
+    <tr><td class="mono">14:00</td><td class="r">10.2</td><td class="r">128</td><td class="r">55.5</td><td>R. Kumar</td><td>Brightener 2 L</td></tr></tbody></table></div></section>`;
+  if(mod.extra==="quality"){
+    const mx=Math.max(...DEFECTS.map(d=>d[1]));
+    h+=`<div class="row2"><section class="panel"><header><h2>Salt spray chamber</h2><span class="hint">Neutral salt spray, ASTM B117</span></header><div class="tscroll"><table class="t"><thead><tr><th>Lot</th><th>Part</th><th>Test</th><th>Result</th></tr></thead><tbody>`+
+      SALT.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="dot ${r[4]}"></span> ${r[3]}</td></tr>`).join("")+`</tbody></table></div></section>
+      <section class="panel"><header><h2>Rejects by defect</h2><span class="hint">This week · pieces ×100</span></header><div class="bars">`+
+      DEFECTS.map(d=>`<div class="bar"><span>${d[0]}</span><span class="tr"><span class="fl" style="width:${d[1]/mx*100}%"></span></span><span class="n">${d[1]}</span></div>`).join("")+`</div></section></div>`;
+  }
+  if(mod.extra==="pm") h+=`<section class="panel"><header><h2>Preventive maintenance</h2><span class="hint">Next 3 weeks</span></header><div class="tscroll"><table class="t"><thead><tr><th>Task</th><th>Due</th><th>Status</th></tr></thead><tbody>`+
+    PM.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${chip(p[2])}</td></tr>`).join("")+`</tbody></table></div></section>`;
+  return h+pageFoot();
+}
+function trend(m){
+  const W=640,H=250,L=48,R=14,T=14,Bm=26, a=m.h;
+  const lo=Math.min(m.min,...a), hi=Math.max(m.max,...a);
+  const x=i=>L+i*(W-L-R)/(a.length-1), y=v=>T+(hi-v)/(hi-lo)*(H-T-Bm);
+  const ticks=[]; const step=niceStep((hi-lo)/4); for(let t=Math.ceil(lo/step)*step;t<=hi+1e-9;t+=step)ticks.push(t);
+  const pts=a.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ");
+  const bLo=y(Math.max(m.lo,lo)), bHi=y(Math.min(m.hi,hi));
+  const s=st(m), col=s==="ok"?"var(--accent)":`var(--${s})`;
+  let g=`<svg viewBox="0 0 ${W} ${H}" id="trend" role="img" aria-label="${m.l} trend, latest ${fmt(m)} ${m.u}">`;
+  g+=`<rect x="${L}" y="${bHi}" width="${W-L-R}" height="${bLo-bHi}" fill="var(--band)"/>`;
+  g+=`<g class="axis">`+ticks.map(t=>`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line-2)" stroke-width="1"/><text x="${L-8}" y="${y(t)+3.5}" text-anchor="end">${fmtTick(t,step)}</text>`).join("")+
+    `<text x="${L}" y="${H-6}">−${HN} readings</text><text x="${W-R}" y="${H-6}" text-anchor="end">now</text></g>`;
+  [["lo",m.lo],["hi",m.hi]].forEach(([n,v])=>{ if(v>lo&&v<hi) g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--good)" stroke-width="1" stroke-dasharray="4 4" opacity=".7"/>`; });
+  g+=`<polygon points="${x(0)},${H-Bm} ${pts} ${x(a.length-1)},${H-Bm}" fill="${col}" opacity=".08"/>`;
+  g+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
+  g+=`<circle cx="${x(a.length-1)}" cy="${y(a[a.length-1])}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`;
+  if(S.hover!=null && S.hover<a.length){ const i=S.hover; g+=`<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H-Bm}" stroke="var(--muted)" stroke-width="1"/><circle cx="${x(i)}" cy="${y(a[i])}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`; }
+  g+=`<rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-Bm}" fill="transparent" data-hit="1"/>`;
+  return g+`</svg>`;
+}
+function niceStep(r){const p=Math.pow(10,Math.floor(Math.log10(r))),n=r/p;return (n<1.5?1:n<3?2:n<7?5:10)*p;}
+function fmtTick(t,step){const d=step<.1?2:step<1?1:0;return (+t.toFixed(d)).toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d});}
+function pageFoot(){return `<footer class="page"><span>Concept layout · demo values are simulated in the browser, no plant connection</span><span>Zinc Protech Plant 01 · Barrel Zn-2</span></footer>`;}
+
+/* ---------- render ---------- */
+function timeStr(){return new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});}
+function render(){
+  renderRail();
+  const main=document.getElementById("main");
+  let h;
+  if(S.view==="overview")h=vOverview();
+  else if(S.view==="alerts")h=vAlerts();
+  else if(S.view==="line")h=vLine();
+  else h=vModule(MODS.find(m=>m.id===S.view));
+  main.innerHTML=h;
+  document.getElementById("clock").textContent=timeStr().slice(0,5);
+  document.getElementById("shdone").textContent=Math.round(plated).toLocaleString("en-IN")+" kg";
+  document.getElementById("shfill").style.width=Math.min(100,plated/9800*100)+"%";
+}
+function go(id,sel){ S.view=id; S.sel=sel||null; S.hover=null; hideTip(); render(); window.scrollTo({top:0}); }
+
+document.addEventListener("click",e=>{
+  const hc=e.target.closest("[data-hideconcept]"); if(hc){S.showConcept=false; try{localStorage.setItem("pg_concept_hide","1");}catch(_){} render(); return;}
+  const sel=e.target.closest(".prow[data-sel]"); if(sel){S.sel=sel.dataset.sel; S.hover=null; render(); return;}
+  const g=e.target.closest("[data-go]"); if(g){ go(g.dataset.go, g.dataset.sel); }
+});
+document.addEventListener("keydown",e=>{ if((e.key==="Enter"||e.key===" ")&&e.target.matches("li[data-go]")){e.preventDefault();go(e.target.dataset.go);} });
+
+/* hover on trend */
+const tip=document.getElementById("tip");
+function hideTip(){tip.hidden=true;}
+document.addEventListener("pointermove",e=>{
+  const svg=document.getElementById("trend");
+  if(!svg||!svg.contains(e.target)){ if(S.hover!=null){S.hover=null; hideTip(); const cb=document.getElementById("chartbox"); if(cb&&S.sel) cb.innerHTML=trend(M[S.sel]);} return; }
+  const r=svg.getBoundingClientRect(), W=640,L=48,R=14, m=M[S.sel];
+  const px=(e.clientX-r.left)/r.width*W; const i=Math.round((px-L)/((W-L-R)/(m.h.length-1)));
+  const idx=clamp(i,0,m.h.length-1);
+  if(idx!==S.hover){ S.hover=idx; document.getElementById("chartbox").innerHTML=trend(m); }
+  const cb=document.getElementById("chartbox").getBoundingClientRect();
+  tip.hidden=false; tip.style.position="fixed";
+  tip.innerHTML=`<b>${fmt(m,m.h[idx])} ${m.u}</b> · ${idx===m.h.length-1?"now":"−"+(m.h.length-1-idx)+" readings"}`;
+  const vx=r.left+(L+idx*(W-L-R)/(m.h.length-1))/W*r.width;
+  tip.style.left=clamp(vx,cb.left+60,cb.right-60)+"px"; tip.style.top=(r.top+10)+"px"; tip.style.transform="translate(-50%,0)";
+});
+
+/* ---------- sim engine ---------- */
+function healthNow(){return clamp(100-alerts().filter(a=>a.s!=="info").reduce((s,a)=>s+(a.s==="crit"?6:2),0)-3,60,100);}
+(function seedHealth(){const h=healthNow(); const m=M.health; m.v=m.base=h; m.h=m.h.map((_,i)=>clamp(h+rnd()*1.2,60,100)); m.h[HN-1]=h;})();
+function tick(){
+  for(const k in M){ const m=M[k];
+    let v=m.v + rnd()*m.sd + (m.up||0) + (m.base-m.v)*(m.up?0.004:.06);
+    if(m.up && Math.abs(v-m.base)>(m.hi-m.lo)*.25) v=m.base; // reset slow drifts so the demo loops
+    m.v=clamp(v,m.min,m.max); m.h.push(m.v); if(m.h.length>HN)m.h.shift();
+  }
+  B.forEach(b=>{ if(b.idle)return; b.left-=.05; b.amp+=rnd()*4; b.cd=clamp(b.cd+rnd()*.012,.8,1.55); if(b.left<=0){b.left=35;} });
+  plated+=M.thru.v*3/3600*20; if(plated>9800)plated=5120;
+  M.health.v=clamp(healthNow()+rnd()*.8,60,100);
+  M.health.h[M.health.h.length-1]=M.health.v;
+  render();
+}
+let timer=setInterval(()=>{ if(!S.paused) tick(); },3000);
+document.getElementById("simbtn").addEventListener("click",()=>{
+  S.paused=!S.paused; document.getElementById("simbtn").textContent=S.paused?"Resume":"Pause";
+  document.getElementById("sim").classList.toggle("paused",S.paused);
+  document.getElementById("simtxt").textContent=S.paused?"Demo data · paused":"Demo data · simulated";
+});
+render();
+})();
+</script>
+</body>
+</html>
