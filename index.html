@@ -284,7 +284,7 @@ table.t td .band{width:120px;display:block}
 
 .pgfoot{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;padding:10px 20px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface);font-size:11.5px;color:var(--muted)}
 .pgfoot b{color:var(--ink-2);font-weight:600}
-.pgfoot span:last-child{margin-left:auto}
+
 .pad.more{border-top:1px solid var(--line-2);padding:8px 14px}
 #scn{max-width:220px}
 #scn.on{border-color:var(--warn);background:var(--warn-soft);color:var(--warn);font-weight:600}
@@ -294,8 +294,47 @@ table.t td .band{width:120px;display:block}
 main{gap:12px}
 .mod .rows{padding-bottom:4px}
 .pr{padding:5px 8px}
-@media (max-width:860px){.pgfoot{padding-inline:16px}.pgfoot span:last-child{margin-left:0}}
-@media (max-width:1200px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .k:nth-child(4){border-left:0} .k:nth-child(n+4){border-top:1px solid var(--line-2)} .mods{grid-template-columns:repeat(2,minmax(0,1fr))} .g2{grid-template-columns:minmax(0,1fr)} }
+
+/* density pass: fits 1200-1400px viewports (Windows 125-150% scaling) */
+body{font-size:12.5px}
+.top-in{gap:10px;padding:6px 14px;flex-wrap:nowrap}
+.brand b{font-size:14px}
+.brand small{font-size:9.5px}
+.sel select{font-size:12px;max-width:180px;padding:2px 5px}
+#plant{max-width:175px}
+#scn{max-width:170px}
+.meta{gap:8px;flex-wrap:nowrap;white-space:nowrap}
+.ibtn{padding:3px 7px;font-size:11.5px}
+.seg button{padding:3px 8px;font-size:11.5px}
+.shell{grid-template-columns:188px minmax(0,1fr)}
+.nav{white-space:nowrap}
+nav.rail{top:45px;height:calc(100vh - 45px - 30px)}
+.nav{padding:6px 9px;font-size:12.5px}
+main{padding:12px 16px 48px}
+.ph h1{font-size:18px}
+.ph p{font-size:12px}
+.k{padding:8px 12px 6px}
+.k .v{font-size:21px}
+.k .lab{font-size:10.5px}
+.k svg{height:20px}
+.panel > header{padding:7px 12px}
+.panel > header h2{font-size:13px}
+table.t{font-size:12px}
+table.t td{padding:6px 10px}
+table.t th{padding:6px 10px}
+.stat .v{font-size:17px}
+.pgfoot{position:fixed;left:0;right:0;bottom:0;z-index:25;height:calc(30px + env(safe-area-inset-bottom,0px));padding:0 0 env(safe-area-inset-bottom,0px);display:block;overflow:hidden}
+.pgfoot .tick{overflow:hidden;height:30px;display:flex;align-items:center;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.pgfoot .trk{display:flex;gap:0;white-space:nowrap;animation:marq 60s linear infinite;will-change:transform}
+.pgfoot .trk span{padding:0 22px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);position:relative}
+.pgfoot .trk span::after{content:"";position:absolute;right:-2px;top:50%;width:4px;height:4px;border-radius:50%;background:var(--band-edge);transform:translateY(-50%)}
+.pgfoot:hover .trk{animation-play-state:paused}
+@keyframes marq{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.pgfoot .trk{animation:none}}
+@media (max-width:1100px){.sel:nth-of-type(1){display:none}}
+@media (max-width:980px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .k:nth-child(4){border-left:0} .k:nth-child(n+4){border-top:1px solid var(--line-2)} .mods{grid-template-columns:repeat(2,minmax(0,1fr))} .g2{grid-template-columns:minmax(0,1fr)} .top-in{flex-wrap:wrap} .meta{flex-wrap:wrap}}
+
+
 @media (max-width:860px){
   .shell{grid-template-columns:minmax(0,1fr)}
   nav.rail{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px 10px}
@@ -341,7 +380,7 @@ main{gap:12px}
   <nav class="rail" id="rail" aria-label="Sections"></nav>
   <main id="main"></main>
 </div>
-<footer class="pgfoot"><span><b>ProcessGrit</b> · Plating intelligence · concept build</span><span>Designed &amp; built by Sree Harsha Kandiraju</span><span>Demo data is simulated in the browser · no plant connection</span><span class="mono">v1.0 · Sep 2026</span></footer>
+<footer class="pgfoot" aria-label="Concept demo"><div class="tick"><div class="trk"><span>Concept demo</span><span>Demo data simulated in the browser</span><span>Real-time line visibility</span><span>Predictive risk register</span><span>Quality &amp; SPC</span><span>ETP &amp; zero liquid discharge</span><span>Lot traceability</span><span>Equipment health</span><span>Concept demo</span><span>Concept demo</span><span>Demo data simulated in the browser</span><span>Real-time line visibility</span><span>Predictive risk register</span><span>Quality &amp; SPC</span><span>ETP &amp; zero liquid discharge</span><span>Lot traceability</span><span>Equipment health</span><span>Concept demo</span></div></div></footer>
 <div id="drawerRoot"></div>
 <div class="tip" id="tip" hidden></div>
 <div class="toast" id="toast" hidden></div>
