@@ -281,6 +281,20 @@ table.t td .band{width:120px;display:block}
 .ibtn .badge{right:-9px}
 @media (max-width:1200px){.labs{grid-template-columns:repeat(3,minmax(0,1fr))}.lab:nth-child(4){border-left:0}.lab:nth-child(n+4){border-top:1px solid var(--line-2)}}
 @media (max-width:560px){.labs{grid-template-columns:repeat(2,minmax(0,1fr))}.lab{border-left:0!important;border-top:1px solid var(--line-2)}.bar.wide{grid-template-columns:120px minmax(0,1fr) 36px}}
+
+.pgfoot{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;padding:10px 20px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface);font-size:11.5px;color:var(--muted)}
+.pgfoot b{color:var(--ink-2);font-weight:600}
+.pgfoot span:last-child{margin-left:auto}
+.pad.more{border-top:1px solid var(--line-2);padding:8px 14px}
+#scn{max-width:220px}
+#scn.on{border-color:var(--warn);background:var(--warn-soft);color:var(--warn);font-weight:600}
+.lmap{padding:8px 10px 6px}
+.stg .tk{height:30px}
+.stg .nm{min-height:0}
+main{gap:12px}
+.mod .rows{padding-bottom:4px}
+.pr{padding:5px 8px}
+@media (max-width:860px){.pgfoot{padding-inline:16px}.pgfoot span:last-child{margin-left:0}}
 @media (max-width:1200px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .k:nth-child(4){border-left:0} .k:nth-child(n+4){border-top:1px solid var(--line-2)} .mods{grid-template-columns:repeat(2,minmax(0,1fr))} .g2{grid-template-columns:minmax(0,1fr)} }
 @media (max-width:860px){
   .shell{grid-template-columns:minmax(0,1fr)}
@@ -311,7 +325,7 @@ table.t td .band{width:120px;display:block}
     <div class="brand"><div class="mark" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16"><path d="M2 13h12M4 13V7h8v6M6.5 7V3.5h3V7" fill="none" stroke="var(--surface)" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div><b>ProcessGrit</b><small>Plating intelligence</small></div></div>
     <div class="sel"><label for="plant">Plant</label><select id="plant"><option>Zinc Protech Plant 01</option></select></div>
     <div class="sel"><label for="lineSel">Line</label><select id="lineSel"><option>Zinc Line · Tank 05 (acid chloride)</option></select></div>
-    <div class="sel"><label for="scn">Demo scenario</label><select id="scn"><option value="normal">Normal running</option><option value="adhesion">Adhesion failure</option><option value="bath">Bath instability</option><option value="etp">ETP compliance risk</option></select></div>
+    <div class="sel"><label for="scn">Demo scenario</label><select id="scn" autocomplete="off"><option value="normal">Normal running</option><option value="adhesion">Adhesion failure</option><option value="bath">Bath instability</option><option value="etp">ETP compliance risk</option></select></div>
     <span class="spacer"></span>
     <div class="meta">
       <button class="ibtn live" type="button" id="pause" title="Pause or resume the simulation"><i></i><span id="livetxt">LIVE · SIMULATED</span></button>
@@ -327,6 +341,7 @@ table.t td .band{width:120px;display:block}
   <nav class="rail" id="rail" aria-label="Sections"></nav>
   <main id="main"></main>
 </div>
+<footer class="pgfoot"><span><b>ProcessGrit</b> · Plating intelligence · concept build</span><span>Designed &amp; built by Sree Harsha Kandiraju</span><span>Demo data is simulated in the browser · no plant connection</span><span class="mono">v1.0 · Sep 2026</span></footer>
 <div id="drawerRoot"></div>
 <div class="tip" id="tip" hidden></div>
 <div class="toast" id="toast" hidden></div>
@@ -659,11 +674,11 @@ function vCC(){
     if(t.m){const m=P[t.m],s=st(m);return `<button class="k ${s}" type="button" data-p="${t.m}"><span class="lab">${t.l}</span><span class="v">${f(m)}<small>${m.u}</small></span>${spark(m.h,s)}<span class="s">Spec ${spec(m)}</span></button>`;}
     return `<button class="k ${t.s}" type="button" ${t.go}><span class="lab">${t.l}</span><span class="v">${t.v}<small>${t.u}</small></span>${t.hist?spark(t.hist,t.s):`<svg aria-hidden="true"></svg>`}<span class="s">${t.sub}</span></button>`;}).join("")+`</section>`;
   h+=panel("Zinc line · end-to-end process",lineMap(),"11 stages in process order · click a stage");
-  h+=`<div class="g2">`+panel("Predictive risk register",riskTable(),"8 models · click a risk for drivers and action")+
-     panel("Needs attention",alertList(al.slice(0,6))+(al.length>6?`<div class="pad" style="border-top:1px solid var(--line-2)"><button class="link" type="button" data-open="alerts">All ${al.length} alerts</button></div>`:""),`${al.filter(a=>a.s==="crit").length} out of spec`)+`</div>`;
+  h+=`<div class="g2">`+panel("Predictive risk register",riskTable(5)+`<div class="pad more"><button class="link" type="button" data-open="risks">All ${RISKS.length} risks</button></div>`,"Top 5 of 8 · click a risk for drivers and action")+
+     panel("Needs attention",alertList(al.slice(0,4))+(al.length>4?`<div class="pad more"><button class="link" type="button" data-open="alerts">All ${al.length} alerts</button></div>`:""),`${al.filter(a=>a.s==="crit").length} out of spec`)+`</div>`;
   h+=`<div class="mods">`+[
-    ["Zinc bath · Tank 05","chem",0,["znc","ph","bt","brt"]],["Pre-treatment","prod",0,["clc","cle","rc1","fe"]],["Passivation & bake","prod",0,["pph","pt","oven","bdelay"]],
-    ["Latest quality outputs","quality",0,["thk","adh","fpy"]],["Equipment","maint",0,["dp","anode","ripple"]],["Environmental status","etp",3,["eph","ni","ezn","cod"]]
+    ["Zinc bath · Tank 05","chem",0,["znc","ph","brt"]],["Pre-treatment","prod",0,["clc","cle","fe"]],["Passivation & bake","prod",0,["pph","oven","bdelay"]],
+    ["Latest quality outputs","quality",0,["thk","adh","fpy"]],["Equipment","maint",0,["dp","anode","ripple"]],["Environmental status","etp",3,["eph","ni","ezn"]]
   ].map(([n,sec,tab,ks])=>{const w=worst(ks);return `<section class="mod ${w}"><header><h3>${n}</h3>${w!=="ok"?stx(w):""}<button class="link" type="button" data-sec="${sec}" data-tab="${tab}">Open</button></header>${rows(ks)}</section>`;}).join("")+`</div>`;
   return h;
 }
@@ -672,8 +687,8 @@ function lineMap(){
     const show=ks.find(k=>st(P[k])!=="ok")||ks[0];const m=P[show];
     return `<button type="button" class="stg ${w}" data-stage="${sg.id}"><span class="no">${String(i+1).padStart(2,"0")}</span><span class="tk${sg.etp?" etp":""}"></span><span class="nm">${sg.n}</span><span class="rd">${f(m)} ${m.u.replace(" of target","")}</span><span class="sl">${W[w]}</span></button>`;}).join("")+`</div></div>`;
 }
-function riskTable(){
-  const rs=RISKS.map(r=>({r,x:risk(r)})).sort((a,b)=>b.x.p-a.x.p);
+function riskTable(n){
+  const rs=RISKS.map(r=>({r,x:risk(r)})).sort((a,b)=>b.x.p-a.x.p).slice(0,n||99);
   return tbl(["Risk","Stage","Probability","~Expected in","Level"],rs.map(({r,x})=>`<tr class="click" data-risk="${r.id}"><td><b class="rn">${r.n}</b><div class="small">${r.eng}</div></td><td>${r.stage}</td><td>${probBar(x.p,x.lvl)}</td><td class="r mono">${x.eta==null?"–":x.eta===0?"now":Math.round(x.eta)+" min"}</td><td>${stx(x.lvl,LVL[x.lvl])}</td></tr>`));
 }
 function alertList(al){
@@ -833,6 +848,7 @@ function drawerHTML(){
       <div class="kv"><div><span>Expected in</span><b>${x.eta==null?"–":x.eta===0?"now":Math.round(x.eta)+" min"}</b></div><div><span>Confidence</span><b>${x.conf}%</b></div><div><span>Main driver</span><b>${P[x.drv].l}</b></div><div><span>Drivers</span><b>${r.k.length}</b></div></div>
       <div class="do"><b>Recommended action</b>${r.fix}</div><div class="do"><b>Poka-yoke</b>${r.poka}</div>
       <section class="panel"><header><h2>Drivers</h2><span class="h">Click for trend</span></header>${rows(r.k)}</section>`;
+  } else if(d.t==="risks"){title="Predictive risk register";crumb=RISKS.length+" models";body=`<section class="panel">${riskTable()}</section>`;
   } else if(d.t==="alerts"){const al=alerts();title="Alerts";crumb=al.length+" open";body=`<section class="panel">${alertList(al)}</section>`;
   } else if(d.t==="exec"){title="Executive report";crumb="Shift B · "+new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
     const o=oee(),rk=RISKS.map(r=>({r,x:risk(r)})).sort((a,b)=>b.x.p-a.x.p).slice(0,3),al=alerts().filter(a=>a.k&&a.s!=="info").slice(0,3);
@@ -916,7 +932,9 @@ document.addEventListener("submit",e=>{if(e.target.id!=="tform")return;e.prevent
   TITR.push([t,v("e_zn"),v("e_kcl"),v("e_bor"),v("e_ph"),v("e_by"),v("e_add")||"None"]);
   AUDIT.unshift([t,v("e_by"),"Titration","Zn "+v("e_zn")+" · KCl "+v("e_kcl")+" · pH "+v("e_ph")]);
   toast("Reading saved to Chemistry and audit trail");render(true);});
-$("scn").addEventListener("change",e=>{scenario=e.target.value;toast(scenario==="normal"?"Back to normal running":"Scenario injected · watch the risk register and alerts");});
+function setScn(v,quiet){scenario=v;$("scn").value=v;$("scn").classList.toggle("on",v!=="normal");if(!quiet)toast(v==="normal"?"Back to normal running":"Scenario running · watch the alerts, risk register and red stages");if(!quiet&&!S.paused){tick();setTimeout(()=>{if(!S.paused)tick();},1000);}}
+$("scn").addEventListener("change",e=>setScn(e.target.value));
+setScn("normal",true);
 $("pause").addEventListener("click",()=>{S.paused=!S.paused;$("live").classList.toggle("paused",S.paused);$("livetxt").textContent=S.paused?"PAUSED · SIMULATED":"LIVE · SIMULATED";});
 
 /* hover on trend */
@@ -940,7 +958,7 @@ if(t0)setTheme(t0);else document.querySelectorAll("[data-theme-set]").forEach(b=
 function tick(){
   const goals=SCN[scenario]||{};
   for(const k in P){const m=P[k];let v;
-    if(goals[k]!=null) v=m.v+(goals[k]-m.v)*.3+rnd()*m.sd;
+    if(goals[k]!=null) v=m.v+(goals[k]-m.v)*.4+rnd()*m.sd;
     else{v=m.v+rnd()*m.sd+(scenario==="normal"?(m.up||0):0)+(m.base-m.v)*(m.up&&scenario==="normal"?.003:.08);
       if(m.up&&Math.abs(v-m.base)>((m.hi??m.max)-(m.lo??m.min))*.28)v=m.base;}
     m.v=clamp(v,m.min,m.max);m.h.push(m.v);if(m.h.length>HN)m.h.shift();if(m.j){m.j.push(gauss()*m.js);m.j.shift();}}
