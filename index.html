@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Zinc Line Command</title>
+<meta name="build" content="concept-v8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -37,6 +38,8 @@
   --band:#2F3834; --band-edge:#56645D; --scrim:rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--f);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
@@ -299,7 +302,8 @@ main{gap:12px}
 body{font-size:12.5px}
 .top-in{gap:10px;padding:6px 14px;flex-wrap:nowrap}
 .brand b{font-size:14px}
-.brand small{font-size:9.5px}
+.brand small{font-size:9.5px;white-space:nowrap}
+.brand b{white-space:nowrap}
 .sel select{font-size:12px;max-width:180px;padding:2px 5px}
 #plant{max-width:175px}
 #scn{max-width:170px}
@@ -335,6 +339,17 @@ table.t th{padding:6px 10px}
 @media (max-width:980px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .k:nth-child(4){border-left:0} .k:nth-child(n+4){border-top:1px solid var(--line-2)} .mods{grid-template-columns:repeat(2,minmax(0,1fr))} .g2{grid-template-columns:minmax(0,1fr)} .top-in{flex-wrap:wrap} .meta{flex-wrap:wrap}}
 
 
+
+/* app shell: header, menu and footer fixed; only the content area scrolls (desktop) */
+@media (min-width:861px){
+  html,body{height:100%;overflow:hidden}
+  body{display:flex;flex-direction:column}
+  .top{position:relative;top:auto;flex:none}
+  .shell{flex:1 1 auto;min-height:0}
+  nav.rail{position:static;height:auto;min-height:0;overflow-y:auto}
+  main{height:100%;overflow-y:auto;padding-bottom:16px}
+  .pgfoot{position:relative;flex:none}
+}
 @media (max-width:860px){
   .shell{grid-template-columns:minmax(0,1fr)}
   nav.rail{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px 10px}
@@ -933,7 +948,7 @@ function render(full){
 function renderDrawer(){const r=$("drawerRoot");const sc=r.querySelector(".db");const top=sc?sc.scrollTop:0;r.innerHTML=drawerHTML();const n=r.querySelector(".db");if(n)n.scrollTop=top;}
 function openD(t,k,push){const stack=push&&S.drawer?(S.drawer.stack||[]).concat([{t:S.drawer.t,k:S.drawer.k}]):[];S.drawer={t,k,stack};S.hover=null;renderDrawer();if(!push){const b=$("drawerRoot").querySelector(".close");if(b)b.focus({preventScroll:true});}}
 function closeD(){S.drawer=null;S.hover=null;$("tip").hidden=true;renderDrawer();}
-function goSec(id,tab){S.sec=id;S.tab=+tab||0;closeD();render(true);window.scrollTo({top:0});}
+function goSec(id,tab){S.sec=id;S.tab=+tab||0;closeD();render(true);$("main").scrollTop=0;window.scrollTo({top:0});}
 function toast(t){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400);}
 function exportCSV(){
   const q=v=>`"${String(v).replace(/"/g,'""')}"`;
