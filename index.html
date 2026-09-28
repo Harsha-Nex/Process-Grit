@@ -6,246 +6,300 @@
 <title>Zinc Line Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
+/* Grey-first palette in the spirit of ISA-101 high-performance HMI: normal = neutral, colour = abnormal only */
 :root{
-  --bg:#EEF1F0; --surface:#FFFFFF; --surface-2:#F5F7F6; --ink:#15201D; --ink-2:#4A5854; --muted:#76837F;
-  --line:#D8DFDC; --line-2:#E7ECEA;
-  --accent:#2D62A0; --accent-soft:#E2EBF5; --accent-ink:#1F4C80;
-  --good:#1F8A5B; --good-soft:#E1F2E9; --warn:#A86B0C; --warn-soft:#FBF0DA; --crit:#C23B2A; --crit-soft:#FBE4E0;
-  --band:rgba(31,138,91,.10);
-  --shadow:0 1px 2px rgba(21,32,29,.05),0 2px 8px rgba(21,32,29,.04);
-  --grid:rgba(45,98,160,.045);
-  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --bg:#E8EAEB; --surface:#F8F9F9; --surface-2:#EFF1F2; --ink:#1C2226; --ink-2:#4A545B; --muted:#78828A;
+  --line:#CDD2D6; --line-2:#E0E4E6; --sel:#DDE5EE;
+  --accent:#2E5B87; --accent-ink:#244A70;
+  --norm:#5E6870; --good:#3E7B4F; --good-soft:#E2EDE5; --warn:#A87708; --warn-soft:#F6EBD2; --crit:#B3261E; --crit-soft:#F6DEDB;
+  --band:#DCE3E0; --band-edge:#AEBBB5; --scrim:rgba(20,26,30,.28);
+  --f:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --m:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --bg:#0A1016; --surface:#101922; --surface-2:#15212C; --ink:#E4ECF2; --ink-2:#A3B3C0; --muted:#6F8191;
-    --line:#223241; --line-2:#1A2733;
-    --accent:#4FB3F0; --accent-soft:#12283A; --accent-ink:#8FD0F7;
-    --good:#35C98A; --good-soft:#0F2E24; --warn:#F2B54A; --warn-soft:#33280F; --crit:#FF6B5A; --crit-soft:#3A1914;
-    --band:rgba(53,201,138,.13);
-    --grid:rgba(79,179,240,.05); --glow:0 0 0 1px rgba(79,179,240,.06),0 8px 24px rgba(0,0,0,.35);
-    --shadow:var(--glow);
+    --bg:#1A1D20; --surface:#22262A; --surface-2:#2A2F33; --ink:#E2E5E7; --ink-2:#A8AFB4; --muted:#7E878D;
+    --line:#383F45; --line-2:#2F353A; --sel:#2E3A46;
+    --accent:#86A9CC; --accent-ink:#A9C3DD;
+    --norm:#9AA3A9; --good:#78B287; --good-soft:#243229; --warn:#DDAE4C; --warn-soft:#3A3120; --crit:#E0685E; --crit-soft:#3E2422;
+    --band:#2F3834; --band-edge:#56645D; --scrim:rgba(0,0,0,.45);
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-    --bg:#0A1016; --surface:#101922; --surface-2:#15212C; --ink:#E4ECF2; --ink-2:#A3B3C0; --muted:#6F8191;
-    --line:#223241; --line-2:#1A2733;
-    --accent:#4FB3F0; --accent-soft:#12283A; --accent-ink:#8FD0F7;
-    --good:#35C98A; --good-soft:#0F2E24; --warn:#F2B54A; --warn-soft:#33280F; --crit:#FF6B5A; --crit-soft:#3A1914;
-    --band:rgba(53,201,138,.13);
-    --grid:rgba(79,179,240,.05); --glow:0 0 0 1px rgba(79,179,240,.06),0 8px 24px rgba(0,0,0,.35);
-    --shadow:var(--glow);
+  --bg:#1A1D20; --surface:#22262A; --surface-2:#2A2F33; --ink:#E2E5E7; --ink-2:#A8AFB4; --muted:#7E878D;
+  --line:#383F45; --line-2:#2F353A; --sel:#2E3A46;
+  --accent:#86A9CC; --accent-ink:#A9C3DD;
+  --norm:#9AA3A9; --good:#78B287; --good-soft:#243229; --warn:#DDAE4C; --warn-soft:#3A3120; --crit:#E0685E; --crit-soft:#3E2422;
+  --band:#2F3834; --band-edge:#56645D; --scrim:rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
-body{background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-.num,.mono{font-variant-numeric:tabular-nums}
-.mono{font-family:var(--f-mono)}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.mono{font-family:var(--m)}
+.num,td,.mono{font-variant-numeric:tabular-nums}
 
 /* top bar */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
-.top-in{display:flex;align-items:center;gap:20px;padding:10px 20px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
-.mark{width:28px;height:28px;border-radius:6px;background:var(--accent);display:grid;place-items:center;flex:none}
-.mark svg{display:block}
-.brand b{font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:.01em}
-.brand small{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:-2px}
-.ctx{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-left:auto;font-size:12.5px;color:var(--ink-2)}
-.ctx span b{color:var(--ink);font-weight:600}
-.sim{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 10px;font-size:12px;background:var(--surface-2)}
-.sim i{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}
-.sim.paused i{background:var(--muted)}
-.sim button{border:0;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;cursor:pointer;font-size:12px}
-.sim button:hover{border-color:var(--accent);color:var(--accent-ink)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:14px;padding:8px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;margin-right:6px}
+.mark{width:26px;height:26px;border-radius:4px;background:var(--ink);display:grid;place-items:center;flex:none}
+.brand b{font-weight:700;font-size:15px;letter-spacing:.005em}
+.brand small{display:block;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:-1px}
+.sel{display:flex;flex-direction:column;gap:0}
+.sel label{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sel select{border:1px solid var(--line);background:var(--surface-2);border-radius:4px;padding:3px 6px;font-size:12.5px;font-weight:500;max-width:170px}
+.spacer{flex:1}
+.meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:11px;letter-spacing:.06em}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.live.paused i{background:var(--muted)}
+.ibtn{border:1px solid var(--line);background:var(--surface-2);border-radius:4px;padding:4px 8px;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:6px;position:relative}
+.ibtn:hover{border-color:var(--ink-2)}
+.ibtn svg{width:15px;height:15px}
+.badge{position:absolute;top:-6px;right:-7px;background:var(--crit);color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:0 5px;line-height:15px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:var(--surface-2);padding:4px 9px;font-size:12px;cursor:pointer;color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.themebox{display:flex;align-items:center;padding-left:10px;margin-left:2px;border-left:1px solid var(--line)}
+.seg button{display:inline-flex;align-items:center;gap:5px}
+.seg svg{width:13px;height:13px}
+.user{display:flex;align-items:center;gap:8px;font-size:12px}
+.user i{width:26px;height:26px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:600;font-size:11px}
+.user small{display:block;color:var(--muted);font-size:10.5px}
 
 /* shell */
-.shell{display:grid;grid-template-columns:208px minmax(0,1fr);gap:0;min-height:calc(100vh - 60px)}
-nav.rail{border-right:1px solid var(--line);background:var(--surface);padding:16px 10px;display:flex;flex-direction:column;gap:2px}
-.rail h6{margin:14px 10px 6px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.rail h6:first-child{margin-top:0}
-.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--ink-2);font-size:13.5px}
+.shell{display:grid;grid-template-columns:200px minmax(0,1fr)}
+nav.rail{border-right:1px solid var(--line);background:var(--surface);padding:12px 8px;display:flex;flex-direction:column;gap:1px;position:sticky;top:53px;height:calc(100vh - 53px);overflow:auto}
+.rail h6{margin:12px 10px 4px;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rail h6:first-child{margin-top:2px}
+.nav{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:0;background:none;padding:7px 10px;border-radius:4px;cursor:pointer;color:var(--ink-2);font-size:13px}
+.nav svg{width:15px;height:15px;flex:none;opacity:.8}
 .nav:hover{background:var(--surface-2);color:var(--ink)}
-.nav[aria-current="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+.nav[aria-current="true"]{background:var(--sel);color:var(--ink);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
 .nav .dot{margin-left:auto}
-.dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
-.dot.ok{background:var(--good)} .dot.warn{background:var(--warn)} .dot.crit{background:var(--crit)}
-.nav .count{margin-left:auto;font-size:11px;font-weight:600;background:var(--crit);color:#fff;border-radius:999px;padding:0 7px;line-height:18px}
+.rail .foot{margin-top:auto;padding:10px;font-size:11px;color:var(--muted);border-top:1px solid var(--line-2)}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block;background:transparent}
+.dot.warn{background:var(--warn)} .dot.crit{background:var(--crit)} .dot.ok{background:transparent;border:1.5px solid var(--band-edge)}
 
-main{padding:20px 24px 40px;min-width:0;display:flex;flex-direction:column;gap:20px}
-.pagehead{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
-.pagehead h1{font-family:var(--f-display);font-weight:700;font-size:28px;margin:0;line-height:1.1;text-wrap:balance}
-.pagehead p{margin:2px 0 0;color:var(--ink-2);max-width:62ch}
-.pagehead .right{margin-left:auto;font-size:12px;color:var(--muted)}
+main{padding:16px 20px 40px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.ph{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.ph h1{font-size:20px;font-weight:600;margin:0;line-height:1.2}
+.ph p{margin:2px 0 0;color:var(--ink-2);font-size:12.5px}
+.ph .r{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{border:0;background:none;padding:8px 12px;cursor:pointer;color:var(--ink-2);font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
 
-.concept{display:flex;gap:14px;align-items:flex-start;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:10px;padding:12px 14px;color:var(--ink)}
-.concept b{font-weight:600}
-.concept ol{margin:4px 0 0;padding-left:18px;color:var(--ink-2)}
-.concept button{margin-left:auto;border:0;background:none;cursor:pointer;color:var(--accent-ink);font-size:12px;white-space:nowrap}
+.note{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--surface);padding:9px 12px;border-radius:4px;font-size:12.5px;color:var(--ink-2)}
+.note b{color:var(--ink)}
+.link{border:0;background:none;padding:0;color:var(--accent-ink);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:inherit}
+.note .x{margin-left:auto;border:0;background:none;cursor:pointer;color:var(--muted);font-size:12px;white-space:nowrap}
 
-/* KPI tiles */
-.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow);cursor:pointer;text-align:left}
-.tile:hover{border-color:var(--accent)}
-.tile .lab{font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:6px}
-.tile .lab .dot{margin-left:auto}
-.tile .val{font-family:var(--f-display);font-weight:600;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.005em}
-.tile .val small{font-family:var(--f-body);font-size:12px;color:var(--muted);font-weight:500;margin-left:3px;letter-spacing:0}
-.tile .sub{font-size:11.5px;color:var(--muted)}
-.tile svg{display:block;width:100%;height:30px}
+/* KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);background:var(--surface);border-radius:4px}
+.k{padding:10px 14px 8px;border:0;background:none;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;position:relative}
+.k + .k{border-left:1px solid var(--line-2)}
+.k:hover{background:var(--surface-2)}
+.k .lab{font-size:11px;color:var(--ink-2);display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.05em}
+.k .v{font-size:24px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.k .v small{font-size:11.5px;color:var(--muted);font-weight:500;margin-left:3px}
+.k .s{font-size:11px;color:var(--muted)}
+.k svg{display:block;width:100%;height:24px}
+.k.warn::before,.k.crit::before{content:"";position:absolute;left:0;right:0;top:0;height:3px}
+.k.warn::before{background:var(--warn)} .k.crit::before{background:var(--crit)}
+.k.warn .v{color:var(--warn)} .k.crit .v{color:var(--crit)}
 
-/* layout blocks */
-.row2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:16px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
-.panel > header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-2)}
-.panel > header h2{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0;letter-spacing:.01em}
-.panel > header .hint{margin-left:auto;font-size:12px;color:var(--muted)}
-.panel .body{padding:14px 16px}
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;min-width:0}
+.panel > header{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line-2)}
+.panel > header h2{font-size:13.5px;font-weight:600;margin:0}
+.panel > header .h{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.pad{padding:12px 14px}
+.g2{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:14px;align-items:start}
+.g2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.stat{padding:9px 14px}
+.stat + .stat{border-left:1px solid var(--line-2)}
+.stat .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.stat .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:11px;color:var(--muted);font-weight:500;margin-left:2px}
+.stat .v.warn{color:var(--warn)} .stat .v.crit{color:var(--crit)}
 
 /* line map */
-.linewrap{overflow-x:auto;padding:16px 16px 12px}
-.linemap{display:flex;align-items:stretch;gap:0}
-.st{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;cursor:pointer;border:0;background:none;padding:0 2px}
-.st .tank{width:100%;max-width:64px;height:54px;border:1.5px solid var(--line);border-top:0;border-radius:0 0 8px 8px;position:relative;overflow:hidden;background:var(--surface-2)}
-.st .liq{position:absolute;left:0;right:0;bottom:0;height:70%;background:color-mix(in srgb,var(--accent) 16%,transparent)}
-.st.warn .tank{border-color:var(--warn)} .st.warn .liq{background:color-mix(in srgb,var(--warn) 22%,transparent)}
-.st.crit .tank{border-color:var(--crit)} .st.crit .liq{background:color-mix(in srgb,var(--crit) 22%,transparent)}
-.st .no{font-family:var(--f-mono);font-size:10px;color:var(--muted)}
-.st .nm{font-size:11px;line-height:1.2;text-align:center;color:var(--ink-2);min-height:27px}
-.st .rd{font-family:var(--f-mono);font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums}
-.st:hover .tank{border-color:var(--accent)}
-.st.zinc{flex:2.6 1 0}
-.st.zinc .tank{max-width:none;display:flex;gap:4px;padding:6px 6px 0;align-items:flex-end}
-.brl{flex:1;height:34px;border-radius:5px;background:color-mix(in srgb,var(--accent) 22%,var(--surface));position:relative;z-index:1;display:grid;place-items:center;font-family:var(--f-mono);font-size:9.5px;color:var(--accent-ink)}
-.brl.warn{background:var(--warn-soft);color:var(--warn);outline:1.5px solid var(--warn)}
-.brl.idle{background:var(--surface);color:var(--muted);outline:1px dashed var(--line)}
-.flow{position:absolute;top:27px;right:-4px;width:8px;height:2px;background:var(--line)}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);padding:0 16px 12px}
-.legend span{display:inline-flex;align-items:center;gap:6px}
+.lwrap{overflow-x:auto}
+.lmap{display:flex;min-width:820px;padding:12px 10px 8px}
+.stg{flex:1 1 0;min-width:0;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 3px;border-radius:4px;position:relative}
+.stg:hover{background:var(--surface-2)}
+.stg .no{font-family:var(--m);font-size:10px;color:var(--muted)}
+.stg .tk{width:100%;max-width:70px;height:36px;border:1.5px solid var(--norm);border-top-width:0;border-radius:0 0 3px 3px;background:linear-gradient(to top,var(--band) 68%,transparent 68%)}
+.stg.warn .tk{border-color:var(--warn);background:linear-gradient(to top,var(--warn-soft) 68%,transparent 68%)}
+.stg.crit .tk{border-color:var(--crit);background:linear-gradient(to top,var(--crit-soft) 68%,transparent 68%)}
+.stg .nm{font-size:11px;text-align:center;line-height:1.2;color:var(--ink-2);min-height:26px}
+.stg .rd{font-family:var(--m);font-size:10.5px}
+.stg.warn .rd{color:var(--warn);font-weight:600} .stg.crit .rd{color:var(--crit);font-weight:600}
+.stg:not(:last-child)::after{content:"";position:absolute;right:-4px;top:40px;border:4px solid transparent;border-left:5px solid var(--muted)}
 
-/* attention list */
-.alist{list-style:none;margin:0;padding:6px 8px}
-.alist li{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;align-items:start;padding:10px 8px;border-radius:8px;cursor:pointer}
-.alist li:hover{background:var(--surface-2)}
-.alist li + li{border-top:1px solid var(--line-2)}
-.sev{width:4px;align-self:stretch;border-radius:2px}
-.sev.crit{background:var(--crit)} .sev.warn{background:var(--warn)} .sev.info{background:var(--accent)}
-.alist .t{font-weight:600;font-size:13.5px}
-.alist .d{font-size:12.5px;color:var(--ink-2);margin-top:2px}
-.alist .act{font-size:12px;color:var(--ink);margin-top:5px}
-.alist .act b{font-weight:600;color:var(--accent-ink)}
-.alist .when{font-size:11px;color:var(--muted);white-space:nowrap;font-family:var(--f-mono)}
-.empty{padding:16px;color:var(--muted)}
-
-/* modules grid */
-.sectitle{display:flex;align-items:baseline;gap:10px}
-.sectitle h2{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0}
-.sectitle span{font-size:12px;color:var(--muted)}
-.mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.mod{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;cursor:pointer;text-align:left;padding:0;overflow:hidden}
-.mod:hover{border-color:var(--accent)}
-.mod header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
-.mod header h3{margin:0;font-family:var(--f-display);font-weight:600;font-size:17px}
-.mod header p{margin:0;font-size:11.5px;color:var(--muted)}
-.chip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
-.chip.ok{background:var(--good-soft);color:var(--good)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.crit{background:var(--crit-soft);color:var(--crit)}
-.chip svg{width:11px;height:11px}
-.mod .rows{padding:2px 14px 6px;display:flex;flex-direction:column}
-.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:7px 0;border-top:1px solid var(--line-2);align-items:center}
-.mrow .k{font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:7px;min-width:0}
-.mrow .v{font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums;text-align:right}
-.mrow .v small{color:var(--muted)}
-.band{grid-column:1 / -1;height:6px;border-radius:3px;background:var(--surface-2);position:relative}
-.band .ok{position:absolute;top:0;bottom:0;background:var(--band);border-left:1px solid color-mix(in srgb,var(--good) 45%,transparent);border-right:1px solid color-mix(in srgb,var(--good) 45%,transparent)}
-.band .pin{position:absolute;top:-2px;width:3px;height:10px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+/* module boxes */
+.mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mod{background:var(--surface);border:1px solid var(--line);border-radius:4px;display:flex;flex-direction:column;min-width:0}
+.mod.warn{border-top:3px solid var(--warn)} .mod.crit{border-top:3px solid var(--crit)}
+.mod header{display:flex;align-items:center;gap:8px;padding:9px 12px 6px}
+.mod h3{margin:0;font-size:13.5px;font-weight:600}
+.mod header .link{margin-left:auto;font-size:12px;text-decoration:none}
+.mod header .link:hover{text-decoration:underline}
+.rows{display:flex;flex-direction:column;padding:0 4px 6px}
+.pr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:6px 8px;border:0;background:none;text-align:left;cursor:pointer;border-radius:3px;width:100%;align-items:center}
+.pr:hover{background:var(--surface-2)}
+.pr .n{font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:7px;min-width:0}
+.pr .v{font-family:var(--m);font-size:12.5px;text-align:right;white-space:nowrap}
+.pr .v small{color:var(--muted)}
+.pr.warn .v{color:var(--warn);font-weight:600} .pr.crit .v{color:var(--crit);font-weight:600}
+.band{grid-column:1 / -1;height:5px;background:var(--surface-2);position:relative;border-radius:1px}
+.band .ok{position:absolute;top:0;bottom:0;background:var(--band);border-left:1px solid var(--band-edge);border-right:1px solid var(--band-edge)}
+.band .id{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--band-edge)}
+.band .pin{position:absolute;top:-3px;width:3px;height:11px;background:var(--ink);transform:translateX(-50%)}
 .band .pin.warn{background:var(--warn)} .band .pin.crit{background:var(--crit)}
-.mod footer{margin-top:auto;padding:9px 14px;border-top:1px solid var(--line-2);font-size:12px;color:var(--accent-ink);display:flex;justify-content:space-between;background:var(--surface-2)}
-.mod footer span:first-child{color:var(--muted)}
 
-.split{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:18px;align-items:start}
-.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
-.split .mods{grid-template-columns:repeat(2,minmax(0,1fr))}
-.more{display:block;width:100%;border:0;border-top:1px solid var(--line-2);background:var(--surface-2);padding:10px;color:var(--accent-ink);cursor:pointer;font-size:12.5px;border-radius:0 0 12px 12px}
-.linemap{min-width:760px}
-/* detail */
-.back{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12.5px}
-.back:hover{border-color:var(--accent)}
-.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
-.plist{display:flex;flex-direction:column;padding:6px 8px 10px}
-.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:10px 8px;border-radius:8px;cursor:pointer;border:0;background:none;text-align:left;width:100%}
-.prow + .prow{border-top:1px solid var(--line-2)}
-.prow:hover{background:var(--surface-2)}
-.prow[aria-pressed="true"]{background:var(--accent-soft)}
-.prow .k{font-size:13px;display:flex;gap:8px;align-items:center}
-.prow .spec{font-size:11px;color:var(--muted);font-family:var(--f-mono)}
-.prow .v{font-family:var(--f-display);font-weight:600;font-size:20px;text-align:right;font-variant-numeric:tabular-nums}
-.prow .v small{font-family:var(--f-body);font-size:11px;color:var(--muted);font-weight:500;margin-left:2px}
-.chartbox{position:relative;padding:8px 12px 12px}
-.chartbox svg{display:block;width:100%;height:auto}
-.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-110%);font-variant-numeric:tabular-nums}
-.tip[hidden]{display:none}
-.axis text{fill:var(--muted);font-size:10.5px;font-family:var(--f-mono)}
+/* alerts */
+.al{list-style:none;margin:0;padding:0}
+.al li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:9px 12px;cursor:pointer;align-items:start}
+.al li + li{border-top:1px solid var(--line-2)}
+.al li:hover{background:var(--surface-2)}
+.sv{font-size:10px;font-weight:700;letter-spacing:.05em;padding:1px 6px;border-radius:2px;margin-top:1px;white-space:nowrap}
+.sv.crit{background:var(--crit);color:#fff} .sv.warn{background:var(--warn);color:#fff} .sv.pred{border:1px solid var(--warn);color:var(--warn)} .sv.info{border:1px solid var(--line);color:var(--ink-2)}
+.al .t{font-weight:600;font-size:12.5px}
+.al .d{font-size:12px;color:var(--ink-2)}
+.al .a{font-size:12px;margin-top:2px}
+.al .w{font-size:10.5px;color:var(--muted);font-family:var(--m)}
+
+/* tables */
+.tw{overflow-x:auto}
 table.t{width:100%;border-collapse:collapse;font-size:12.5px}
-table.t th{text-align:left;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--line)}
-table.t td{padding:9px 10px;border-bottom:1px solid var(--line-2);font-variant-numeric:tabular-nums}
-table.t td.r,table.t th.r{text-align:right}
-table.t tr:last-child td{border-bottom:0}
-.tscroll{overflow-x:auto}
-.bars{display:flex;flex-direction:column;gap:9px;padding:14px 16px}
-.bar{display:grid;grid-template-columns:130px minmax(0,1fr) 36px;gap:10px;align-items:center;font-size:12.5px}
-.bar .tr{height:12px;background:var(--surface-2);border-radius:0 4px 4px 0;position:relative}
-.bar .fl{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:0 4px 4px 0}
-.bar .n{font-family:var(--f-mono);text-align:right}
-.note{font-size:12px;color:var(--muted)}
-footer.page{font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
+table.t th{text-align:left;font-weight:600;color:var(--muted);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+table.t td{padding:7px 12px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+table.t td.w{white-space:normal;min-width:180px}
+table.t .r{text-align:right}
+table.t tr.click{cursor:pointer}
+table.t tr.click:hover td{background:var(--surface-2)}
+table.t tr.grp td{background:var(--surface-2);font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);padding:5px 12px}
+table.t td.warn{color:var(--warn);font-weight:600} table.t td.crit{color:var(--crit);font-weight:600}
+table.t td .band{width:120px;display:block}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
+.st.ok{color:var(--ink-2);font-weight:500} .st.warn{color:var(--warn)} .st.crit{color:var(--crit)}
+.bars{display:flex;flex-direction:column;gap:8px;padding:12px 14px}
+.bar{display:grid;grid-template-columns:120px minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:12px}
+.bar .tr{height:10px;background:var(--surface-2);position:relative}
+.bar .fl{position:absolute;left:0;top:0;bottom:0;background:var(--norm);border-radius:0 3px 3px 0}
+.bar .n{font-family:var(--m);text-align:right}
+.chart{padding:8px 12px 10px;position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.ax text{fill:var(--muted);font-size:10.5px;font-family:var(--m)}
+.small{font-size:11.5px;color:var(--muted)}
+
+/* ETP flow */
+.flow{display:flex;align-items:stretch;gap:0;padding:14px;min-width:900px}
+.fn{flex:1 1 0;border:1px solid var(--line);background:var(--surface-2);border-radius:3px;padding:8px;font-size:11.5px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0}
+.fn:hover{border-color:var(--ink-2)}
+.fn b{font-size:12px;font-weight:600}
+.fn .mono{font-size:11px}
+.fn.warn{border-color:var(--warn);background:var(--warn-soft)} .fn.crit{border-color:var(--crit);background:var(--crit-soft)}
+.arr{flex:none;width:18px;display:grid;place-items:center;color:var(--muted)}
+.subflow{display:flex;gap:10px;padding:0 14px 14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.subflow span{border:1px dashed var(--line);border-radius:3px;padding:5px 9px}
+
+/* forms */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 12px;padding:14px}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld label{font-size:11px;color:var(--ink-2)}
+.fld input,.fld select{border:1px solid var(--line);background:var(--surface-2);border-radius:3px;padding:6px 8px}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--surface);border-radius:3px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:12.5px}
+.btn.sec{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.search{border:1px solid var(--line);background:var(--surface-2);border-radius:3px;padding:5px 8px;width:220px;max-width:100%}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:41;display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(0,0,0,.12);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.dh h2{margin:0;font-size:15px;font-weight:600}
+.dh .crumb{font-size:11px;color:var(--muted)}
+.dh .close{margin-left:auto}
+.db{overflow:auto;flex:1;display:flex;flex-direction:column;gap:12px;padding:14px 16px 20px}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big .v{font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.big .v small{font-size:13px;color:var(--muted);font-weight:500;margin-left:3px}
+.big .v.warn{color:var(--warn)} .big .v.crit{color:var(--crit)}
+.kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:3px}
+.kv div{padding:7px 10px}
+.kv div + div{border-left:1px solid var(--line-2)}
+.kv span{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kv b{font-family:var(--m);font-weight:500;font-size:13px}
+.do{border-left:3px solid var(--accent);background:var(--surface-2);padding:8px 12px;font-size:12.5px}
+.do b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);font-size:11.5px;padding:5px 8px;border-radius:3px;white-space:nowrap;z-index:60;transform:translate(-50%,0)}
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:4px;font-size:12.5px;z-index:70}
 
 
-/* feel: live motion + theme toggle */
-.theme{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface-2)}
-.theme button{border:0;background:none;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--ink-2);display:inline-flex;gap:5px;align-items:center}
-.theme button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
-.theme svg{width:13px;height:13px}
-.sim i{box-shadow:0 0 0 0 var(--good);animation:pulse 1.8s ease-out infinite}
-.sim.paused i{animation:none}
-@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 60%,transparent)}100%{box-shadow:0 0 0 7px transparent}}
-.shiftbar{display:flex;align-items:center;gap:10px;padding:0 20px 8px;font-size:11.5px;color:var(--muted)}
-.shiftbar .trk{flex:1;height:4px;border-radius:2px;background:var(--line-2);position:relative;overflow:hidden;max-width:520px}
-.shiftbar .fil{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:2px}
-.shiftbar b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
-.flow{height:2px;background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 8px);background-size:16px 2px;animation:flow 1s linear infinite;opacity:.7}
-@keyframes flow{to{background-position:16px 0}}
-.st .liq::before{content:"";position:absolute;left:-50%;right:-50%;top:-3px;height:6px;border-radius:50%;background:inherit;animation:wave 3.5s ease-in-out infinite}
-@keyframes wave{50%{transform:translateX(12%)}}
-.brl:not(.idle)::after{content:"";position:absolute;inset:3px;border-radius:4px;background:repeating-linear-gradient(90deg,transparent 0 5px,color-mix(in srgb,var(--accent) 22%,transparent) 5px 6px);animation:spin 1.6s linear infinite;background-size:12px 100%}
-@keyframes spin{to{background-position:12px 0}}
-.tile.crit,.mod.crit{border-color:color-mix(in srgb,var(--crit) 55%,var(--line))}
-.tile.crit{box-shadow:0 0 0 1px color-mix(in srgb,var(--crit) 25%,transparent),var(--shadow)}
-.val.bump{animation:bump .6s ease-out}
-@keyframes bump{from{color:var(--accent-ink)}}
-@media (max-width:900px){.shiftbar{padding:0 16px 8px}}
-@media (max-width:1180px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .split{grid-template-columns:minmax(0,1fr)} }
-@media (max-width:900px){
+/* v5 additions */
+.ph .acts{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ibtn.pri{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.ibtn.pri:hover{opacity:.9}
+.prob{display:inline-flex;align-items:center;gap:8px;min-width:150px}
+.prob .tr{flex:1;height:6px;background:var(--surface-2);border-radius:1px;position:relative;min-width:80px}
+.prob .fl{position:absolute;left:0;top:0;bottom:0;background:var(--norm);border-radius:1px}
+.prob .fl.warn{background:var(--warn)} .prob .fl.crit{background:var(--crit)}
+.prob .mono{font-size:11.5px;width:34px;text-align:right}
+.rn{font-weight:600}
+.gst{float:right;text-transform:none;letter-spacing:0}
+.stg .sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.stg.warn .sl{color:var(--warn);font-weight:600} .stg.crit .sl{color:var(--crit);font-weight:600}
+.stg .tk.etp{border-style:dashed}
+.fn .no{font-family:var(--m);font-size:10px;color:var(--muted)}
+.fn .sl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.fn.warn .sl{color:var(--warn);font-weight:600} .fn.crit .sl{color:var(--crit);font-weight:600}
+.bar.wide{grid-template-columns:190px minmax(0,1fr) 40px}
+.labs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.lab{padding:10px 14px}
+.lab + .lab{border-left:1px solid var(--line-2)}
+.lab .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.lab .v{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.lab.warn .v{color:var(--warn)} .lab.crit .v{color:var(--crit)}
+.olist{margin:0;padding:10px 14px 10px 32px;display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.rail .foot .l{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ph-v{font-size:20px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.ph-v small{font-size:11px;color:var(--muted);font-weight:500;margin-left:2px}
+.ph-v.warn{color:var(--warn)} .ph-v.crit{color:var(--crit)}
+.g2 > .panel:first-child table.t td,.drawer table.t td{white-space:normal}
+.drawer table.t td.w{min-width:0}
+.ibtn .badge{right:-9px}
+@media (max-width:1200px){.labs{grid-template-columns:repeat(3,minmax(0,1fr))}.lab:nth-child(4){border-left:0}.lab:nth-child(n+4){border-top:1px solid var(--line-2)}}
+@media (max-width:560px){.labs{grid-template-columns:repeat(2,minmax(0,1fr))}.lab{border-left:0!important;border-top:1px solid var(--line-2)}.bar.wide{grid-template-columns:120px minmax(0,1fr) 36px}}
+@media (max-width:1200px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} .k:nth-child(4){border-left:0} .k:nth-child(n+4){border-top:1px solid var(--line-2)} .mods{grid-template-columns:repeat(2,minmax(0,1fr))} .g2{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:860px){
   .shell{grid-template-columns:minmax(0,1fr)}
-  nav.rail{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px 12px;gap:4px}
-  .rail h6{display:none}
+  nav.rail{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px 10px}
+  .rail h6,.rail .foot{display:none}
   .nav{width:auto;white-space:nowrap;flex:none}
-  .nav .dot,.nav .count{margin-left:6px}
-  .row2,.detail{grid-template-columns:minmax(0,1fr)}
-  main{padding:16px 16px 32px}
-  .top-in{padding:10px 16px}
+  .nav[aria-current="true"]{box-shadow:inset 0 -2px 0 var(--accent)}
+  main{padding:14px 16px 32px}
+  .top-in{padding:8px 16px}
+  .g2e{grid-template-columns:minmax(0,1fr)}
+  .user span{display:none}
 }
 @media (max-width:560px){
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .mods,.split .mods{grid-template-columns:minmax(0,1fr)}
-  .ctx{margin-left:0;gap:10px}
-  .tile .val{font-size:26px}
-  .bar{grid-template-columns:100px minmax(0,1fr) 30px}
+  .k:nth-child(n){border-left:0;border-top:1px solid var(--line-2)} .k:nth-child(2n){border-left:1px solid var(--line-2)} .k:nth-child(-n+2){border-top:0}
+  .mods{grid-template-columns:minmax(0,1fr)}
+  .kv{grid-template-columns:repeat(2,minmax(0,1fr))} .kv div:nth-child(3){border-left:0} .kv div:nth-child(n+3){border-top:1px solid var(--line-2)}
+  .sel select{max-width:150px}
+  .stat + .stat{border-left:0;border-top:1px solid var(--line-2)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -254,370 +308,652 @@ footer.page{font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wr
 
 <header class="top">
   <div class="top-in">
-    <div class="brand">
-      <div class="mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 12h12M4 12V6h8v6M6 6V3h4v3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-      <div><b>ProcessGrit</b><small>Plating intelligence · concept</small></div>
-    </div>
-    <div class="ctx">
-      <span>Plant <b>Zinc Protech 01</b></span>
-      <span>Line <b>Barrel Zn-2 · alkaline</b></span>
-      <span>Shift <b>B</b> · <b class="mono" id="clock">--:--</b></span>
-      <span class="theme" role="group" aria-label="Theme"><button type="button" data-theme-set="light" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M3.4 12.6l1.3-1.3M11.3 4.7l1.3-1.3" stroke-linecap="round"/></svg>Day</button><button type="button" data-theme-set="dark" aria-pressed="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 9.8A5.5 5.5 0 0 1 6.2 3a5.5 5.5 0 1 0 6.8 6.8z" stroke-linejoin="round"/></svg>Night</button></span>
-      <span class="sim" id="sim"><i></i><span id="simtxt">Demo data · simulated</span><button id="simbtn" type="button">Pause</button></span>
+    <div class="brand"><div class="mark" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16"><path d="M2 13h12M4 13V7h8v6M6.5 7V3.5h3V7" fill="none" stroke="var(--surface)" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div><b>ProcessGrit</b><small>Plating intelligence</small></div></div>
+    <div class="sel"><label for="plant">Plant</label><select id="plant"><option>Zinc Protech Plant 01</option></select></div>
+    <div class="sel"><label for="lineSel">Line</label><select id="lineSel"><option>Zinc Line · Tank 05 (acid chloride)</option></select></div>
+    <div class="sel"><label for="scn">Demo scenario</label><select id="scn"><option value="normal">Normal running</option><option value="adhesion">Adhesion failure</option><option value="bath">Bath instability</option><option value="etp">ETP compliance risk</option></select></div>
+    <span class="spacer"></span>
+    <div class="meta">
+      <button class="ibtn live" type="button" id="pause" title="Pause or resume the simulation"><i></i><span id="livetxt">LIVE · SIMULATED</span></button>
+      <span>Shift <b>B</b> · <span class="mono" id="clock">--:--:--</span></span>
+      <button class="ibtn" type="button" data-open="alerts" aria-label="Alerts"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11V7a4 4 0 0 1 8 0v4l1.2 1.5H2.8zM6.5 14h3" stroke-linejoin="round" stroke-linecap="round"/></svg>Alerts<span class="badge" id="bellct">0</span></button>
+      <span class="user" title="Ramesh Kumar · Administrator"><i>RK</i></span>
+      <span class="themebox"><span class="seg" role="group" aria-label="Theme: day or night"><button type="button" data-theme-set="light" aria-pressed="true" title="Day theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2.8"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/></svg>Day</button><button type="button" data-theme-set="dark" aria-pressed="false" title="Night theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M13 9.8A5.5 5.5 0 0 1 6.2 3a5.5 5.5 0 1 0 6.8 6.8z"/></svg>Night</button></span></span>
     </div>
   </div>
-  <div class="shiftbar"><span>Shift B · 14:00–22:00</span><span class="trk"><span class="fil" id="shfill"></span></span><span>Plated <b id="shdone">–</b> of <b>9,800 kg</b> plan</span></div>
 </header>
 
 <div class="shell">
   <nav class="rail" id="rail" aria-label="Sections"></nav>
   <main id="main"></main>
 </div>
-
+<div id="drawerRoot"></div>
 <div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" hidden></div>
 
 <script>
 (function(){
 "use strict";
-/* ---------- metric model ---------- */
-// lo/hi = acceptable spec; min/max = display scale; sd = drift per tick; tgt = drift target (mean reversion)
-const M = {
-  health:{l:"Plant health",u:"/100",v:87,lo:80,hi:100,min:60,max:100,sd:.7,d:0},
-  thru:{l:"Throughput",u:"kg/h",v:1240,lo:1150,hi:1450,min:1000,max:1500,sd:14,d:0},
-  fpy:{l:"First-pass yield",u:"%",v:97.8,lo:96.5,hi:100,min:94,max:100,sd:.12,d:1},
-  thk:{l:"Coating thickness",u:"µm",v:9.4,lo:8,hi:12,min:6,max:14,sd:.12,d:1},
-  kwh:{l:"Energy",u:"kWh/kg",v:.62,lo:0,hi:.70,min:.4,max:.9,sd:.006,d:2},
-  zn:{l:"Zinc metal",u:"g/L",v:10.2,lo:8,hi:12,min:6,max:14,sd:.08,d:1},
-  naoh:{l:"Caustic soda (NaOH)",u:"g/L",v:128,lo:120,hi:140,min:100,max:160,sd:.8,d:0},
-  carb:{l:"Sodium carbonate",u:"g/L",v:55.5,lo:0,hi:60,min:20,max:80,sd:.35,d:1,up:.06},
-  brt:{l:"Brightener level",u:"% of target",v:92,lo:85,hi:110,min:70,max:120,sd:.6,d:0},
-  btemp:{l:"Zinc bath temp",u:"°C",v:26.5,lo:22,hi:30,min:18,max:34,sd:.15,d:1},
-  degt:{l:"Degrease temp",u:"°C",v:64,lo:60,hi:75,min:50,max:80,sd:.4,d:0},
-  hcl:{l:"Pickle HCl",u:"%",v:11.2,lo:8,hi:15,min:5,max:18,sd:.08,d:1},
-  fe:{l:"Iron in pickle",u:"g/L",v:71,lo:0,hi:80,min:30,max:100,sd:.4,d:0,up:.08},
-  pph:{l:"Passivate pH",u:"pH",v:1.92,lo:1.6,hi:2.2,min:1.2,max:2.6,sd:.012,d:2},
-  ptemp:{l:"Passivate temp",u:"°C",v:28,lo:25,hi:35,min:20,max:40,sd:.2,d:1},
-  cd:{l:"Current density (avg)",u:"A/dm²",v:1.05,lo:.5,hi:1.5,min:.2,max:2,sd:.02,d:2},
-  volt:{l:"Rectifier voltage (avg)",u:"V",v:7.4,lo:5,hi:9.5,min:3,max:12,sd:.06,d:1},
-  ripple:{l:"Rectifier ripple",u:"%",v:3.1,lo:0,hi:5,min:0,max:8,sd:.05,d:1},
-  dp:{l:"Filter pump ΔP",u:"bar",v:1.02,lo:0,hi:1.2,min:0,max:1.6,sd:.008,d:2,up:.004},
-  anode:{l:"Zinc anode fill",u:"%",v:64,lo:40,hi:100,min:0,max:100,sd:.2,d:0,up:-.05},
-  oven:{l:"Bake oven temp",u:"°C",v:204,lo:190,hi:220,min:170,max:240,sd:.8,d:0},
-  znkg:{l:"Zinc used",u:"g/kg parts",v:14.6,lo:0,hi:16,min:8,max:20,sd:.08,d:1},
-  chem:{l:"Chemical cost",u:"₹/kg",v:4.8,lo:0,hi:5.5,min:3,max:7,sd:.03,d:1},
-  cost:{l:"Total plating cost",u:"₹/kg",v:11.6,lo:0,hi:13,min:9,max:14,sd:.06,d:1},
-  eph:{l:"ETP outlet pH",u:"pH",v:7.6,lo:6.5,hi:8.5,min:5.5,max:9.5,sd:.03,d:1},
-  ezn:{l:"Zinc in discharge",u:"mg/L",v:1.2,lo:0,hi:5,min:0,max:6,sd:.04,d:1},
-  tss:{l:"Suspended solids",u:"mg/L",v:42,lo:0,hi:100,min:0,max:120,sd:1,d:0},
-  water:{l:"Water use",u:"L/kg",v:6.8,lo:0,hi:8,min:4,max:10,sd:.05,d:1}
-};
-const HN = 40;
-function rnd(){ return (Math.random()+Math.random()+Math.random()-1.5)/1.5; }
-for (const k in M){
-  const m=M[k]; m.base=m.v; m.h=[];
-  let v=m.v - (m.up||0)*HN;
-  for(let i=0;i<HN;i++){ v += rnd()*m.sd + (m.up||0) + (m.base - v)*.08*(m.up?0:1); m.h.push(clamp(v,m.min,m.max)); }
-  m.h[HN-1]=m.v;
-}
+const $=id=>document.getElementById(id);
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function st(m){
-  const v=m.v; if(v<m.lo||v>m.hi) return "crit";
-  const span=(m.hi-m.lo)||1, e=.08*span;
-  const lowEdge = m.lo>0 || m.min>=m.lo; // one-sided specs only warn on the side that matters
-  if((v-m.lo<e && m.lo>m.min) || (m.hi-v<e && m.hi<m.max)) return "warn";
-  return "ok";
-}
-function fmt(m,v){ v = v==null?m.v:v; return v.toLocaleString("en-IN",{minimumFractionDigits:m.d,maximumFractionDigits:m.d}); }
-function specTxt(m){
-  if(m.lo<=m.min || m.lo===0) return "≤ "+fmt(m,m.hi);
-  if(m.hi>=m.max) return "≥ "+fmt(m,m.lo);
-  return fmt(m,m.lo)+"–"+fmt(m,m.hi);
-}
+function rnd(){return (Math.random()+Math.random()+Math.random()-1.5)/1.5;}
+const HN=48, RD=0.5; // 48 readings, 30 s apart = last 24 min; prediction horizon 12 readings = 6 min
 
-/* ---------- barrels ---------- */
-const PARTS=["M10×1.25 flange bolt · 10.9","M8 hex nut · Cl 8","M12 stud · 8.8","M6 weld nut","M10 hex bolt · 8.8","M14 wheel nut · 10"];
-const B=[1,2,3,4,5,6].map((n,i)=>({id:"Z"+n,part:PARTS[i],kg:[180,220,160,200,0,190][i],amp:[410,470,380,445,0,430][i],left:[14,6,22,31,0,9][i],cd:[1.02,1.12,.98,1.05,0,1.46][i]}));
-B[4].idle=true;
-
-/* ---------- modules ---------- */
-const MODS=[
-  {id:"process",n:"Process",p:"Barrels & rectifiers",keys:["cd","volt","ripple"],extra:"barrels"},
-  {id:"chem",n:"Chemistry",p:"Bath analysis vs spec",keys:["zn","naoh","carb","brt","btemp"],extra:"titration"},
-  {id:"pretreat",n:"Pre-treatment & finish",p:"Degrease, pickle, passivate, bake",keys:["degt","hcl","fe","pph","ptemp","oven"]},
-  {id:"quality",n:"Quality",p:"Thickness, yield, salt spray",keys:["thk","fpy"],extra:"quality"},
-  {id:"maint",n:"Maintenance",p:"Filters, anodes, PM schedule",keys:["dp","anode","ripple"],extra:"pm"},
-  {id:"cost",n:"Energy & cost",p:"Per kg of parts plated",keys:["kwh","znkg","chem","cost"]},
-  {id:"etp",n:"Effluent (ETP)",p:"Discharge vs consent limits",keys:["eph","ezn","tss","water"]}
+/* ---------- process stages (same 11 as their line map) ---------- */
+const STAGES=[
+ {id:"rm",n:"Raw material"},{id:"clean",n:"Pre-cleaning"},{id:"rinse",n:"Rinsing"},{id:"act",n:"Acid activation"},
+ {id:"zn",n:"Zinc plating"},{id:"prinse",n:"Post-rinse"},{id:"pass",n:"Passivation & seal"},{id:"dry",n:"Drying / oven"},
+ {id:"bake",n:"Baking (HDE)"},{id:"qa",n:"QC / inspection"},{id:"etpline",n:"ETP plant",etp:true}
 ];
-const KPI=["health","thru","fpy","thk","kwh"];
-const ACT={
-  carb:["Carbonate building up in zinc bath","Plan carbonate removal (freeze-out or dilution) before it passes 60 g/L. High carbonate causes burning and lower efficiency."],
-  fe:["Iron is high in the HCl pickle","Schedule a partial pickle dump. High iron slows pickling and carries iron into the zinc bath."],
-  dp:["Filter pump pressure rising","Change the filter cartridge on the zinc tank this shift. A clogged filter lets particles roughen the deposit."],
-  anode:["Zinc anode baskets running low","Top up zinc balls in the anode baskets so zinc metal holds at 8–12 g/L."],
-  brt:["Brightener below target","Add brightener as per ampere-hour meter. Low brightener gives a dull, hazy finish."],
-  zn:["Zinc metal off spec","Adjust anode area or dilute. Zinc metal controls plating speed and throwing power."],
-  naoh:["Caustic off spec","Add caustic soda as per last titration."],
-  thk:["Coating thickness near spec limit","Check current density and time on the running barrels."],
-  fpy:["First-pass yield dropping","Open quality, check today's defect Pareto."],
-  cd:["Current density high on a barrel","Check load weight and set point on the flagged barrel."],
-  ripple:["Rectifier ripple rising","Check rectifier R3 thyristor and cooling."],
-  oven:["Bake oven off temperature","Hold 10.9 parts until oven is back in 190–220 °C band."],
-  btemp:["Zinc bath temperature off band","Check chiller/heater on zinc tank."],
-  pph:["Passivate pH drifting","Adjust with nitric acid or caustic as per supplier sheet."],
-  hcl:["Pickle acid strength off","Replenish HCl."], degt:["Degreaser temperature off","Check heater and thermostat."],
-  ptemp:["Passivate temperature off","Check tank heater."], volt:["Rectifier voltage abnormal","Check contacts and bus bars."],
-  kwh:["Energy per kg is high","Check idle rectifiers and oven door losses."], znkg:["Zinc consumption high","Check drag-out and thickness overshoot."],
-  chem:["Chemical cost above target","Review additions log against ampere-hours."], cost:["Plating cost above target","Open energy & cost breakdown."],
-  eph:["ETP outlet pH off consent","Adjust neutralisation dosing."], ezn:["Zinc in discharge high","Check clarifier and dosing."],
-  tss:["Suspended solids high","Check clarifier sludge level."], water:["Water use high","Check rinse flow valves."],
-  health:["Plant health low","See open issues."], thru:["Throughput below plan","Check idle barrels and loading."]
+/* ---------- ETP stages (same 10 as their ETP flow) ---------- */
+const ESTG=[
+ {id:"e1",n:"Collection / equalization"},{id:"e2",n:"Chemical treatment"},{id:"e3",n:"Clarification"},{id:"e4",n:"PSF / ACF filtration"},
+ {id:"e5",n:"Ultrafiltration (UF)"},{id:"e6",n:"RO stage 1"},{id:"e7",n:"RO stage 2"},{id:"e8",n:"DM plant"},
+ {id:"e9",n:"Reject / evaporator (ZLD)"},{id:"e10",n:"Sludge / filter press"}
+];
+
+/* ---------- parameters: lo/hi = spec (null = one-sided), id = ideal, min/max = display scale ---------- */
+const P={};
+function def(k,o){P[k]=Object.assign({sd:0,d:1,up:0,std:"Plant SOP"},o);}
+const TDS="Supplier TDS", CON="CPCB / SPCB consent";
+def("hv",{s:"rm",l:"Base metal hardness",u:"HV",v:318,lo:290,hi:360,id:320,min:260,max:390,sd:1.5,d:0,std:"ISO 6507"});
+def("ra",{s:"rm",l:"Surface roughness Ra",u:"µm",v:.73,lo:null,hi:1.0,id:.6,min:0,max:1.4,sd:.01,d:2,std:"ISO 4287"});
+def("inrej",{s:"rm",l:"Incoming rejection",u:"%",v:.6,lo:null,hi:1.0,id:.5,min:0,max:2,sd:.02,d:2,std:"ISO 2859 AQL"});
+def("clc",{s:"clean",l:"Cleaner concentration",u:"g/L",v:50.1,lo:40,hi:60,id:50,min:30,max:70,sd:.25,std:"ASTM B322"});
+def("clt",{s:"clean",l:"Cleaner temperature",u:"°C",v:60.5,lo:55,hi:70,id:60,min:45,max:80,sd:.25,std:"ASTM B322"});
+def("cle",{s:"clean",l:"Cleaning effectiveness",u:"%",v:98.5,lo:97,hi:null,id:99,min:92,max:100,sd:.08,std:"ASTM F22 water-break"});
+def("rc1",{s:"rinse",l:"Rinse conductivity",u:"µS/cm",v:68,lo:null,hi:120,id:50,min:0,max:200,sd:1.2,d:0});
+def("rc2",{s:"rinse",l:"Acid rinse conductivity",u:"µS/cm",v:83,lo:null,hi:150,id:55,min:0,max:250,sd:1.4,d:0});
+def("hcl",{s:"act",l:"HCl concentration",u:"% v/v",v:10.1,lo:8,hi:15,id:10,min:5,max:18,sd:.06,std:"ASTM B183"});
+def("fe",{s:"act",l:"Iron in pickle",u:"g/L",v:71,lo:null,hi:80,id:40,min:0,max:100,sd:.3,d:0,up:.07});
+def("znc",{s:"zn",l:"Zinc metal",u:"g/L",v:30.2,lo:25,hi:40,id:32,min:18,max:46,sd:.15,std:"ASTM B633 · "+TDS});
+def("kcl",{s:"zn",l:"Potassium chloride",u:"g/L",v:204,lo:180,hi:230,id:205,min:160,max:250,sd:.8,d:0,std:TDS});
+def("bor",{s:"zn",l:"Boric acid",u:"g/L",v:26,lo:22,hi:30,id:26,min:18,max:34,sd:.1,std:TDS});
+def("ph",{s:"zn",l:"Bath pH",u:"pH",v:5.12,lo:4.8,hi:5.6,id:5.2,min:4.2,max:6.2,sd:.012,d:2,std:"ASTM E70"});
+def("bt",{s:"zn",l:"Bath temperature",u:"°C",v:27.1,lo:20,hi:35,id:28.5,min:15,max:40,sd:.12,std:TDS});
+def("brt",{s:"zn",l:"Brightener",u:"% of target",v:92,lo:85,hi:110,id:100,min:70,max:120,sd:.5,d:0,std:TDS});
+def("cd",{s:"zn",l:"Current density",u:"A/dm²",v:1.05,lo:.5,hi:1.4,id:1.0,min:.2,max:2,sd:.015,d:2,std:"ASTM B633"});
+def("volt",{s:"zn",l:"Rectifier voltage",u:"V",v:7.4,lo:4,hi:9.5,id:7,min:2,max:12,sd:.05,std:TDS});
+def("rc3",{s:"prinse",l:"Drag-out rinse conductivity",u:"µS/cm",v:61,lo:null,hi:120,id:50,min:0,max:200,sd:1.1,d:0});
+def("pph",{s:"pass",l:"Passivate pH",u:"pH",v:1.92,lo:1.6,hi:2.2,id:1.9,min:1.2,max:2.6,sd:.01,d:2,std:TDS});
+def("pt",{s:"pass",l:"Passivate temperature",u:"°C",v:29,lo:25,hi:35,id:30,min:18,max:40,sd:.15,std:TDS});
+def("ptime",{s:"pass",l:"Passivate immersion time",u:"s",v:45,lo:30,hi:60,id:45,min:20,max:70,sd:.4,d:0,std:TDS});
+def("sealc",{s:"pass",l:"Sealer concentration",u:"%",v:10.2,lo:8,hi:12,id:10,min:6,max:14,sd:.05,std:TDS});
+def("dryt",{s:"dry",l:"Dryer temperature",u:"°C",v:71,lo:60,hi:80,id:70,min:50,max:90,sd:.4,d:0});
+def("oven",{s:"bake",l:"Oven temperature",u:"°C",v:204,lo:190,hi:220,id:200,min:170,max:240,sd:.8,d:0,std:"ASTM B850 · ISO 4042"});
+def("bdelay",{s:"bake",l:"Plating-to-bake delay",u:"h",v:1.6,lo:null,hi:4,id:1,min:0,max:6,sd:.03,std:"ASTM B850 · ISO 4042"});
+def("thk",{s:"qa",l:"Coating thickness",u:"µm",v:9.4,lo:8,hi:12,id:10,min:6,max:14,sd:.1,std:"ASTM B568 (XRF)"});
+def("fpy",{s:"qa",l:"First-pass yield",u:"%",v:97.8,lo:96.5,hi:null,id:99,min:93,max:100,sd:.1,std:"Plant KPI"});
+def("adh",{s:"qa",l:"Adhesion test pass",u:"%",v:100,lo:98,hi:null,id:100,min:85,max:100,sd:.15,std:"ASTM B571"});
+/* production / cost / equipment */
+def("thru",{s:"prod",l:"Throughput",u:"kg/h",v:1240,lo:1150,hi:null,id:1300,min:950,max:1450,sd:12,d:0,std:"Plant KPI"});
+def("kwh",{s:"cost",l:"Energy per kg",u:"kWh/kg",v:.62,lo:null,hi:.7,id:.58,min:.4,max:.9,sd:.005,d:2,std:"Plant KPI"});
+def("znkg",{s:"cost",l:"Zinc used",u:"g/kg parts",v:14.6,lo:null,hi:16,id:13.5,min:8,max:20,sd:.07,std:"Plant KPI"});
+def("chem",{s:"cost",l:"Chemical cost",u:"₹/kg",v:4.8,lo:null,hi:5.5,id:4.5,min:3,max:7,sd:.03,std:"Plant KPI"});
+def("cost",{s:"cost",l:"Plating cost",u:"₹/kg",v:11.6,lo:null,hi:13,id:11,min:9,max:15,sd:.05,std:"Plant KPI"});
+def("dp",{s:"eq",l:"Filter pump ΔP",u:"bar",v:1.02,lo:null,hi:1.2,id:.6,min:0,max:1.6,sd:.006,d:2,up:.0035});
+def("anode",{s:"eq",l:"Zinc anode fill",u:"%",v:64,lo:40,hi:null,id:80,min:0,max:100,sd:.2,d:0,up:-.04});
+def("ripple",{s:"eq",l:"Rectifier ripple",u:"%",v:3.1,lo:null,hi:5,id:2,min:0,max:8,sd:.04});
+/* ETP 150 KLD */
+def("inflow",{s:"e1",l:"Inlet flow",u:"m³/h",v:6.1,lo:null,hi:7.5,id:6,min:0,max:9,sd:.06});
+def("eqph",{s:"e1",l:"Equalization pH",u:"pH",v:3.4,lo:2,hi:5,id:3.5,min:1,max:7,sd:.03});
+def("eqlvl",{s:"e1",l:"Equalization tank level",u:"%",v:58,lo:20,hi:85,id:55,min:0,max:100,sd:.5,d:0});
+def("orp",{s:"e2",l:"ORP · Cr⁶⁺ reduction",u:"mV",v:255,lo:200,hi:320,id:250,min:120,max:400,sd:2,d:0});
+def("cnox",{s:"e2",l:"Cyanide after oxidation",u:"mg/L",v:.05,lo:null,hi:.2,id:.03,min:0,max:.5,sd:.003,d:2});
+def("dph",{s:"e2",l:"Precipitation pH",u:"pH",v:8.9,lo:8.5,hi:9.5,id:9,min:7.5,max:10.5,sd:.02});
+def("clar",{s:"e3",l:"Clarifier turbidity",u:"NTU",v:8,lo:null,hi:15,id:5,min:0,max:25,sd:.15,d:0});
+def("blanket",{s:"e3",l:"Sludge blanket height",u:"m",v:1.2,lo:null,hi:1.8,id:1,min:0,max:2.5,sd:.01});
+def("psf",{s:"e4",l:"PSF differential pressure",u:"bar",v:.62,lo:null,hi:1.0,id:.5,min:0,max:1.4,sd:.006,d:2});
+def("acf",{s:"e4",l:"ACF differential pressure",u:"bar",v:.48,lo:null,hi:1.0,id:.4,min:0,max:1.4,sd:.005,d:2});
+def("tmp",{s:"e5",l:"UF trans-membrane pressure",u:"bar",v:.92,lo:null,hi:1.5,id:.8,min:0,max:2,sd:.008,d:2});
+def("sdi",{s:"e5",l:"UF filtrate SDI",u:"SDI",v:3.2,lo:null,hi:4,id:2.5,min:0,max:6,sd:.03,up:.002});
+def("rop",{s:"e6",l:"RO-1 feed pressure",u:"bar",v:12.4,lo:8,hi:16,id:12,min:5,max:20,sd:.08});
+def("rorec1",{s:"e6",l:"RO-1 recovery",u:"%",v:56,lo:50,hi:null,id:58,min:35,max:70,sd:.3,d:0});
+def("rorec",{s:"e7",l:"Overall RO recovery",u:"%",v:72,lo:65,hi:null,id:75,min:50,max:85,sd:.3,d:0});
+def("perm",{s:"e7",l:"Permeate TDS",u:"mg/L",v:310,lo:null,hi:500,id:250,min:0,max:700,sd:3,d:0});
+def("permph",{s:"e7",l:"Permeate pH",u:"pH",v:6.9,lo:6.5,hi:8.5,id:7,min:5.5,max:9.5,sd:.02});
+def("dm",{s:"e8",l:"DM water conductivity",u:"µS/cm",v:8,lo:null,hi:20,id:5,min:0,max:30,sd:.15});
+def("silica",{s:"e8",l:"DM silica",u:"mg/L",v:.05,lo:null,hi:.1,id:.03,min:0,max:.2,sd:.001,d:2});
+def("rejtds",{s:"e9",l:"RO reject TDS",u:"mg/L",v:38000,lo:null,hi:45000,id:36000,min:20000,max:55000,sd:150,d:0});
+def("mee",{s:"e9",l:"Evaporator energy",u:"kWh/m³",v:42,lo:null,hi:55,id:40,min:20,max:70,sd:.3,d:0});
+def("vib",{s:"e9",l:"Evaporator pump vibration",u:"mm/s",v:3.1,lo:null,hi:4.5,id:2.5,min:0,max:7,sd:.04});
+def("sludge",{s:"e10",l:"Sludge generated",u:"kg/day",v:146,lo:null,hi:200,id:140,min:0,max:260,sd:1,d:0});
+def("cake",{s:"e10",l:"Filter-press cake moisture",u:"%",v:62,lo:null,hi:70,id:60,min:40,max:85,sd:.3,d:0});
+def("recyc",{s:"water",l:"Water recycled",u:"%",v:68,lo:60,hi:null,id:75,min:40,max:90,sd:.3,d:0,std:"Plant KPI"});
+def("water",{s:"water",l:"Fresh water use",u:"L/kg",v:6.8,lo:null,hi:8,id:6,min:3,max:11,sd:.05,std:"Plant KPI"});
+/* discharge vs consent (illustrative limits) */
+def("eph",{s:"etpd",l:"Discharge pH",u:"pH",v:7.6,lo:6.5,hi:8.5,id:7.5,min:5.5,max:10,sd:.03,std:CON});
+def("ezn",{s:"etpd",l:"Zinc",u:"mg/L",v:1.2,lo:null,hi:5,id:.8,min:0,max:8,sd:.04,std:CON});
+def("ni",{s:"etpd",l:"Nickel",u:"mg/L",v:.9,lo:null,hi:3,id:.5,min:0,max:5,sd:.03,std:CON});
+def("cn",{s:"etpd",l:"Cyanide",u:"mg/L",v:.06,lo:null,hi:.2,id:.03,min:0,max:.5,sd:.003,d:2,std:CON});
+def("cr6",{s:"etpd",l:"Hexavalent chromium",u:"mg/L",v:.03,lo:null,hi:.1,id:.01,min:0,max:.25,sd:.002,d:2,std:CON});
+def("cr",{s:"etpd",l:"Total chromium",u:"mg/L",v:.3,lo:null,hi:2,id:.2,min:0,max:3,sd:.01,d:2,std:CON});
+def("tss",{s:"etpd",l:"Suspended solids",u:"mg/L",v:42,lo:null,hi:100,id:30,min:0,max:140,sd:1,d:0,std:CON});
+def("cod",{s:"etpd",l:"COD",u:"mg/L",v:118,lo:null,hi:250,id:100,min:0,max:320,sd:2,d:0,std:CON});
+def("bod",{s:"etpd",l:"BOD (3 day)",u:"mg/L",v:22,lo:null,hi:30,id:15,min:0,max:45,sd:.3,d:0,std:CON});
+def("og",{s:"etpd",l:"Oil & grease",u:"mg/L",v:4,lo:null,hi:10,id:3,min:0,max:15,sd:.08,std:CON});
+
+const SCN={
+  adhesion:{clc:35,cle:94.8,rc1:150,rc2:190,adh:91,fpy:95.2},
+  bath:{ph:5.85,bt:36.5,brt:79,thk:7.6,cd:1.52},
+  etp:{eph:9.0,ezn:6.1,ni:3.5,cn:.3,orp:345,perm:560,sdi:4.6,tss:108}
 };
-const STATIC_ALERTS=[
-  {s:"info",t:"Barrel Z5 idle for 18 min",d:"No load assigned. Loading bay shows 3 lots waiting.",a:"Assign lot 2241 (M10 hex bolt) to Z5.",mod:"process",w:"18m"},
-  {s:"warn",t:"Salt spray lot B-2231 at 48 h of 72 h",d:"Trivalent blue passivate, M10×1.25 flange bolt 10.9. No white rust yet.",a:"Inspect at 72 h and record result.",mod:"quality",w:"48h"}
-];
-const PM=[
-  ["Zinc tank filter cartridge","Due today","warn"],["Rectifier R3 IR / thyristor check","Due in 2 days","ok"],
-  ["Bake oven thermocouple calibration","12 Oct","ok"],["Barrel Z2 door gasket","Overdue 1 day","crit"],["Anode bag inspection","19 Oct","ok"]
-];
-const DEFECTS=[["Dull / hazy",14],["Burning at edges",9],["Blisters",5],["Stains",4],["Low thickness",3],["Poor adhesion",1]];
-const SALT=[["B-2231","M10×1.25 flange bolt","72 h NSS","48 h · no white rust","warn"],["B-2228","M8 hex nut","96 h NSS","Passed 96 h","ok"],["B-2224","M12 stud","72 h NSS","Passed 72 h","ok"],["B-2219","M6 weld nut","120 h NSS","Failed at 104 h · white rust","crit"]];
+let scenario="normal";
+for(const k in P){const m=P[k]; m.base=m.v; m.h=[]; let v=m.v-(m.up||0)*HN;
+  for(let i=0;i<HN;i++){ v+=rnd()*m.sd+(m.up||0)+(m.up?0:(m.base-v)*.1); m.h.push(clamp(v,m.min,m.max)); } m.h[HN-1]=m.v; }
 
-/* ---------- theme ---------- */
-function setTheme(t){ document.documentElement.setAttribute("data-theme",t);
-  document.querySelectorAll("[data-theme-set]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.themeSet===t)));
-  try{localStorage.setItem("pg_theme",t);}catch(e){} }
-let t0="dark"; try{ t0=localStorage.getItem("pg_theme")||"dark"; }catch(e){}
-setTheme(t0);
-document.addEventListener("click",e=>{const b=e.target.closest("[data-theme-set]"); if(b) setTheme(b.dataset.themeSet);});
-let plated=5120;
-/* ---------- state ---------- */
-const S={view:"overview",sel:null,hover:null,paused:false,showConcept:true};
-try{ if(localStorage.getItem("pg_concept_hide")==="1") S.showConcept=false; }catch(e){}
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const JIT={thk:.27,znc:1.0,cd:.065};
+for(const k in JIT){P[k].js=JIT[k];P[k].j=Array.from({length:HN},()=>gauss()*JIT[k]);}
+/* ---------- maths ---------- */
+function st(m){const v=m.v;
+  if((m.lo!=null&&v<m.lo)||(m.hi!=null&&v>m.hi))return "crit";
+  const span=((m.hi??m.max)-(m.lo??m.min))||1, e=.07*span;
+  if((m.lo!=null&&v-m.lo<e)||(m.hi!=null&&m.hi-v<e))return "warn";
+  return "ok";}
+function stOf(v,m){return st(Object.assign({},m,{v}));}
+function f(m,v){v=v==null?m.v:v;return v.toLocaleString("en-IN",{minimumFractionDigits:m.d,maximumFractionDigits:m.d});}
+function spec(m){ if(m.lo!=null&&m.hi!=null)return f(m,m.lo)+"–"+f(m,m.hi); if(m.lo!=null)return "≥ "+f(m,m.lo); return "≤ "+f(m,m.hi); }
+function reg(m){const a=m.h.slice(-12),n=a.length,mx=(n-1)/2,my=a.reduce((s,v)=>s+v,0)/n;let sxy=0,sxx=0,syy=0;
+  a.forEach((v,i)=>{sxy+=(i-mx)*(v-my);sxx+=(i-mx)**2;syy+=(v-my)**2;});const b=sxy/sxx;return {b,r2:syy?(sxy*sxy)/(sxx*syy):0};}
+function pred(m){return clamp(m.v+reg(m).b*12,m.min,m.max);}
+function trendOf(m){const b=reg(m).b*12,span=((m.hi??m.max)-(m.lo??m.min));if(Math.abs(b)<.04*span)return ["stable","→"];return b>0?["rising","↑"]:["falling","↓"];}
+function dev(m){return m.id?((m.v-m.id)/Math.abs(m.id))*100:0;}
+function inSync(m){const span=((m.hi??m.max)-(m.lo??m.min));return st(m)==="ok"&&Math.abs(m.v-m.id)<.3*span;}
+function riskOf(m,v){ // 0 at ideal-ish centre, 1 at or past a limit
+  if(stOf(v,m)==="crit")return 1;const span=((m.hi??m.max)-(m.lo??m.min));
+  const d=Math.min(m.lo!=null?v-m.lo:Infinity,m.hi!=null?m.hi-v:Infinity)/span;return clamp(1-d/.35,0,1);}
+function etaMin(m){ // minutes until nearest limit at current slope
+  const b=reg(m).b;if(Math.abs(b)<1e-9)return null;
+  const lim=b>0?m.hi:m.lo;if(lim==null)return null;const r=(lim-m.v)/b;if(r<=0)return 0;return r*RD;}
+const W={ok:"Normal",warn:"Watch",crit:"Out of spec"};
 
-function modStatus(mod){ let w=0,c=0; mod.keys.forEach(k=>{const s=st(M[k]); if(s==="crit")c++; else if(s==="warn")w++;});
-  if(mod.id==="maint"){ PM.forEach(p=>{ if(p[2]==="crit")c++; else if(p[2]==="warn")w++; }); }
-  if(mod.id==="process" && B.some(b=>b.cd>1.4))w++;
-  return c?"crit":w?"warn":"ok"; }
+/* ---------- guidance ---------- */
+const ACT={
+ fe:"Plan a partial pickle dump. High iron slows pickling and carries iron into the zinc bath.",
+ dp:"Change the zinc tank filter cartridge this shift. A blocked filter roughens the deposit.",
+ anode:"Top up zinc anode baskets to hold zinc metal at 25–40 g/L.",
+ clc:"Add cleaner as per titration. Weak cleaner leaves oil, which causes blistering and peeling.",
+ cle:"Check cleaner strength, temperature and dwell time. Poor cleaning is the first cause of adhesion failure.",
+ rc1:"Increase rinse overflow. Carried-over cleaner contaminates the acid and zinc tanks.",
+ rc2:"Increase acid rinse overflow. Chloride drag-in hurts passivation.",
+ rc3:"Increase drag-out rinse flow. Zinc carry-over stains the passivate.",
+ adh:"Hold the lot. Check pre-cleaning and activation before releasing more loads.",
+ ph:"Correct pH with dilute HCl as per supplier sheet. High pH gives burnt, rough deposits.",
+ bt:"Check the chiller on Tank 05. Above 35 °C brightener breaks down and the deposit dulls.",
+ brt:"Add brightener as per ampere-hour meter. Low brightener gives a dull, hazy finish.",
+ thk:"Increase plating time or current density on running barrels. Check against customer spec.",
+ cd:"Check load weight on the flagged barrel. An under-loaded barrel burns the parts.",
+ fpy:"Open Quality and check today's defect Pareto.",
+ oven:"Hold 10.9 parts until the oven is back in the 190–220 °C band.",
+ bdelay:"Bake 10.9 and harder parts within 4 h of plating to prevent hydrogen embrittlement.",
+ eph:"Adjust neutralisation dosing. Hold the outlet valve if pH stays above 8.5.",
+ ezn:"Check clarifier sludge blanket and precipitation pH. Divert to re-treatment tank.",
+ ni:"Check precipitation pH (9.0–9.5 for nickel). Divert to re-treatment tank.",
+ cn:"Extend oxidation time and check hypochlorite dose and ORP.",
+ orp:"Check bisulphite dose and pH in the chrome reduction tank.",
+ perm:"Check RO membrane rejection. Plan CIP if permeate TDS keeps rising.",
+ sdi:"Backwash sand and carbon filters. High SDI fouls RO membranes.",
+ tss:"Check clarifier and pressure sand filter backwash.",
+ cod:"Check oil skimmer and organics load from the cleaner dump."
+};
+function act(k){const m=P[k];return ACT[k]||(`Bring ${m.l.toLowerCase()} back to ${spec(m)} ${m.u}. Ideal is ${f(m,m.id)} ${m.u}.`);}
+
+/* ---------- predictive risks (their AI risk register) ---------- */
+const RISKS=[
+ {id:"env",n:"Environmental discharge breach",eng:"Compliance prediction",stage:"ETP plant",k:["eph","ezn","ni","cn","cr6","tss","cod"],fix:"Increase neutraliser dosing and hold discharge until pH and metals are in limit.",poka:"Auto-divert outlet to re-treatment tank if any metal exceeds limit."},
+ {id:"adh",n:"Adhesion failure",eng:"Adhesion failure prediction",stage:"Pre-cleaning",k:["clc","clt","cle","rc1","adh"],fix:"Check cleaner strength and rinse quality before the next load.",poka:"Block barrel start if water-break test is not logged for the shift."},
+ {id:"bath",n:"Bath instability · burning & dull deposit",eng:"Bath health model",stage:"Zinc plating",k:["ph","bt","brt","cd","znc"],fix:"Correct pH and brightener, check chiller and barrel loads.",poka:"Rectifier ramps down current if pH exceeds 5.6."},
+ {id:"thk",n:"Thickness out of spec",eng:"Thickness prediction",stage:"Zinc plating",k:["thk","cd","znc"],fix:"Adjust plating time on the next loads using the current density trend.",poka:"Hold lot release until XRF result is entered."},
+ {id:"carry",n:"Carry-over contamination",eng:"Carry-over prediction",stage:"Rinsing",k:["rc1","rc2","rc3"],fix:"Raise rinse overflow and add drip time over the tanks.",poka:"Minimum drip time interlock on the hoist."},
+ {id:"sludge",n:"Excess sludge generation",eng:"Sludge optimisation",stage:"ETP plant",k:["sludge","cake","blanket"],fix:"Optimise lime dose and filter-press cycle.",poka:"Dose lime by flow and pH, not by timer."},
+ {id:"membrane",n:"RO membrane fouling",eng:"Membrane health",stage:"ETP plant",k:["sdi","tmp","perm"],fix:"Backwash pre-filters and plan RO clean-in-place.",poka:"Auto-flush RO on SDI above 4."},
+ {id:"water",n:"Water inefficiency",eng:"Water optimisation",stage:"Rinsing",k:["water","recyc","rc1"],fix:"Switch rinses to counter-flow and raise the recycle ratio.",poka:"Conductivity-controlled rinse valves."}
+];
+function risk(r){const vals=r.k.map(k=>{const m=P[k];return Math.max(riskOf(m,m.v),riskOf(m,pred(m)));});
+  const mx=Math.max(...vals),mean=vals.reduce((s,v)=>s+v,0)/vals.length;
+  const p=clamp(4+92*(.7*mx+.3*mean),2,98);
+  let eta=null;r.k.forEach(k=>{const m=P[k];if(st(m)==="crit"){eta=0;return;}const e=etaMin(m);if(e!=null&&e<120&&(eta==null||e<eta))eta=e;});
+  const conf=Math.round(55+40*Math.max(...r.k.map(k=>reg(P[k]).r2)));
+  const drv=r.k.slice().sort((a,b)=>Math.max(riskOf(P[b],P[b].v),riskOf(P[b],pred(P[b])))-Math.max(riskOf(P[a],P[a].v),riskOf(P[a],pred(P[a]))))[0];
+  return {p,eta,conf,lvl:p>=60?"crit":p>=30?"warn":"ok",drv};}
+const LVL={crit:"High",warn:"Medium",ok:"Low"};
+
+/* ---------- static records ---------- */
+const PARTS=["M10×1.25 flange bolt · 10.9","M8 hex nut · Cl 8","M12 stud · 8.8","M6 weld nut","M10 hex bolt · 8.8","M14 wheel nut · 10"];
+const B=[0,1,2,3,4,5].map(i=>({id:"Z"+(i+1),part:PARTS[i],kg:[180,220,160,200,0,190][i],amp:[410,470,380,445,0,430][i],left:[14,6,22,31,0,9][i],cd:[1.02,1.12,.98,1.05,0,1.2][i],idle:i===4}));
+const EQUIP=[
+ {id:"RC-01",n:"Rectifier bank R1–R6",t:"Rectifier",a:"Tank 05",h:96,k:"ripple"},
+ {id:"P-204",n:"Filter / circulation pump",t:"Pump",a:"Tank 05",h:0,k:"dp"},
+ {id:"H-03",n:"Bath chiller",t:"Chiller",a:"Tank 05",h:95,k:"bt"},
+ {id:"B-01",n:"Air blower · agitation",t:"Blower",a:"Pre-treatment",h:97},
+ {id:"CV-01",n:"Hoist & barrel drive",t:"Conveyor",a:"Main line",h:91},
+ {id:"D-02",n:"Brightener dosing pump",t:"Dosing pump",a:"Tank 05",h:97,k:"brt"},
+ {id:"O-03",n:"Bake oven zone 3",t:"Oven",a:"HDE bake",h:95,k:"oven"},
+ {id:"P-ETP1",n:"ETP transfer pump",t:"Pump",a:"ETP",h:97,k:"vib"}
+];
+const PM=[["Zinc tank filter cartridge","P-204","Due today","warn"],["Barrel Z2 door gasket","CV-01 · Z2","Overdue 1 day","crit"],["Rectifier R3 thyristor check","RC-01","In 2 days","ok"],["Bake oven thermocouple calibration","O-03","12 Oct","ok"],["RO membrane CIP","ETP RO-1","16 Oct","ok"],["Anode bag inspection","Tank 05","19 Oct","ok"]];
+const RECT=[["R1","Z1",7.2,410,2.8,41],["R2","Z2",7.6,470,3.0,44],["R3","Z3",7.1,380,4.4,52],["R4","Z4",7.4,445,2.9,43],["R5","Z5",0,0,0,31],["R6","Z6",7.9,430,3.2,46]];
+const DEFECTS=[["Pitting",13],["Surface stain",11],["Burn marks",7],["Blistering",4],["Low thickness",3],["Poor adhesion",1]];
+const ROOT=[["Organic contamination in bath",25],["Carry-over from rinses",21],["Current density spikes",13],["Conductivity drift",12],["Rinse inefficiency",10],["Base metal condition",8]];
+const LAB=[["Salt spray","ASTM B117","386 h to red rust","ok"],["EIS impedance","ASTM G106","7.7 kΩ·cm²","ok"],["Hull cell rating","ASTM B-series practice","A · uniform","ok"],["TOC (organics)","Bath sample","22.6 ppm","warn"],["XRF thickness","ASTM B568","11.7 µm","ok"],["Tape adhesion","ASTM B571","Pass","ok"]];
+const SALT=[["B-2231","M10×1.25 flange bolt","72 h white rust","48 h · no white rust","warn"],["B-2228","M8 hex nut","96 h white rust","Passed 96 h","ok"],["B-2224","M12 stud","72 h white rust","Passed 72 h","ok"],["B-2219","M6 weld nut","120 h white rust","Failed at 104 h","crit"]];
+const CTQ=[["Coating thickness","8–12 µm","ASTM B568 · ISO 4042","XRF, 5 pcs/lot","Every lot","thk"],["Corrosion resistance","≥ 72 h to white rust","ASTM B117 · ISO 9227","Salt spray","1 lot/shift",null,"warn"],["Adhesion","No peeling or blistering","ASTM B571","Tape / bend test","Every lot","adh"],["Hydrogen embrittlement","Bake ≤ 4 h after plating","ASTM B850 · ISO 4042","Oven log","Every 10.9 lot","bdelay"],["Hexavalent chromium","Not detected","ELV / RoHS","Spot test","Weekly",null,"ok"],["Appearance","Uniform blue, no stains","Customer standard","Visual","Every lot","fpy"],["Discharge metals","Within consent","CPCB / SPCB","Lab + online","Daily","ezn"]];
+let LOTS=[["L-2241","M10 hex bolt · 8.8","Cust. A","Z5","waiting","–","–","–","Queued"],["L-2240","M14 wheel nut · 10","Cust. C","Z6","13:52","9.8","Pending","–","In process"],["L-2239","M10×1.25 flange bolt · 10.9","Cust. A","Z1","13:40","9.6","Due 17:40","–","In process"],["L-2236","M8 hex nut · Cl 8","Cust. B","Z2","12:55","10.1","N/A","B-2228 pass","Released"],["L-2231","M10×1.25 flange bolt · 10.9","Cust. A","Z3","10:20","9.2","Done 13:05","B-2231 48 h","On hold"],["L-2228","M12 stud · 8.8","Cust. D","Z4","09:45","10.4","N/A","B-2224 pass","Released"]];
+let TITR=[["06:10","30.6","206","26.2","5.14","R. Kumar","None"],["10:05","30.1","203","25.9","5.18","S. Yadav","KCl 10 kg"],["14:00","30.2","204","26.0","5.12","R. Kumar","Brightener 2 L"]];
+const ADD=[["14:02","Brightener","2 L","Tank 05","R. Kumar","Ah meter 18,400"],["10:12","Potassium chloride","10 kg","Tank 05","S. Yadav","Titration 10:05"],["08:30","Lime","25 kg","ETP precipitation","M. Singh","Auto-dosing top-up"],["07:15","Hydrochloric acid","60 L","Pickle T-03","S. Yadav","Titration 06:10"]];
+const STOCK=[["Zinc anodes (balls)","1,240 kg","85 kg/day","14.6","ok"],["Potassium chloride","18 bags","1.2 bags/day","15","ok"],["Boric acid","6 bags","0.8 bags/day","7.5","warn"],["Brightener (carrier + main)","40 L","9 L/day","4.4","crit"],["Trivalent blue passivate","210 L","14 L/day","15","ok"],["Hydrochloric acid 33%","900 L","60 L/day","15","ok"]];
+const DOSE=[["Sodium metabisulphite","Chrome reduction","6 kg","ORP 200–320 mV","orp"],["Sodium hypochlorite","Cyanide oxidation","18 L","Residual CN < 0.2 mg/L","cnox"],["Lime slurry","Metal precipitation","25 kg","pH 8.5–9.5","dph"],["Alum / PAC","Flash mixer","8 kg","40 ppm","clar"],["Polyelectrolyte","Flocculator","0.6 kg","2 ppm","blanket"],["Antiscalant","RO feed","1.1 L","3 ppm","sdi"]];
+let AUDIT=[["14:02","R. Kumar","Chemical addition","Brightener 2 L to Tank 05"],["13:58","System","Alarm","Barrel Z2 gasket PM overdue"],["13:40","S. Yadav","Lot start","L-2239 loaded to Z1"],["12:30","QA · P. Nair","Lot hold","L-2231 on hold pending salt spray"],["10:05","S. Yadav","Titration","Zn 30.1 · KCl 203 · pH 5.18"]];
+const REPORTS=[["Shift production report","End of every shift","Today 14:00"],["Daily bath analysis","Daily 07:00","Today 07:00"],["Lot traceability certificate","On lot release","Today 13:05"],["ETP compliance (monthly)","1st of month","01 Sep"],["Executive summary","Weekly, Monday","Today 09:00"],["Maintenance compliance","Weekly","Today 09:00"]];
+const INTEG=[["Rectifiers R1–R6","Modbus RTU → edge gateway","Online","2 s","Live"],["Bath pH & temperature probes","4–20 mA → PLC","Online","5 s","Live"],["Line PLC","OPC UA","Online","1 s","Live"],["ETP SCADA","OPC UA","Online","10 s","Live"],["Rinse conductivity sensors","4–20 mA → PLC","Planned","–","Phase 2"],["XRF thickness gauge","CSV import","Manual","Per lot","Phase 2 · direct link"],["Online metals analyser (ETP)","Modbus TCP","Planned","–","Phase 3"],["ERP (lot master, dispatch)","REST API","Online","5 min","Live"],["Lab titrations","Data entry screen","Manual","3×/shift","Live"]];
+const USERS=[["Ramesh Kumar","Administrator","All"],["S. Yadav","Line operator","Production, Data entry"],["P. Nair","Quality engineer","Quality, Reports"],["M. Singh","ETP operator","ETP, Data entry"],["Plant head","Viewer","Command center, Reports"]];
+const RULES=[["Any bath parameter","Out of spec","Line supervisor","WhatsApp + screen"],["Predicted breach","Within 6 min","Line operator","Screen"],["Risk register","Probability ≥ 60%","Plant head","WhatsApp"],["ETP discharge","Out of consent limit","ETP operator, Plant head","SMS + WhatsApp"],["PM task","Overdue","Maintenance lead","Email"],["Lot on hold","Any","QA, Dispatch","Email"]];
+
+/* ---------- sections ---------- */
+const IC={
+ cc:'<path d="M2 2h5v5H2zM9 2h5v3H9zM9 7h5v7H9zM2 9h5v5H2z"/>',
+ prod:'<path d="M2 13h12M3 13V8l3 2V8l3 2V5l4 3v5"/>',
+ quality:'<path d="M8 1.5l5 2v4c0 3.2-2.2 5.6-5 7-2.8-1.4-5-3.8-5-7v-4z"/><path d="M5.8 8l1.6 1.6L10.5 6.5"/>',
+ chem:'<path d="M6 2h4M6.5 2v4L3 13h10L9.5 6V2"/>',
+ etp:'<path d="M8 2S4 6.5 4 9.5a4 4 0 0 0 8 0C12 6.5 8 2 8 2z"/>',
+ maint:'<path d="M10.5 2.5a3 3 0 0 0-3.8 3.8L2.5 10.5l3 3 4.2-4.2a3 3 0 0 0 3.8-3.8l-1.9 1.9-1.6-.4-.4-1.6z"/>',
+ entry:'<path d="M3 2.5h7l3 3V13.5H3z"/><path d="M5.5 8h5M5.5 10.5h5"/>',
+ reports:'<path d="M3 13.5V2.5h10v11z"/><path d="M5.5 10.5V8M8 10.5V5.5M10.5 10.5V7"/>',
+ settings:'<circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v1.8M8 12.4v1.8M1.8 8h1.8M12.4 8h1.8M3.6 3.6l1.3 1.3M11.1 11.1l1.3 1.3M3.6 12.4l1.3-1.3M11.1 4.9l1.3-1.3"/>'
+};
+const SEC=[
+ {id:"cc",n:"Command center",g:"Monitor",sub:"Whole plant at a glance. Click any number, stage, risk or row for detail."},
+ {id:"prod",n:"Production",g:"Monitor",tabs:["Live process","Output & OEE"],sub:"Every parameter against its ideal, with a 6-minute prediction."},
+ {id:"quality",n:"Quality",g:"Monitor",tabs:["SPC & capability","CTQ register","Lab tests","Batch traceability"],sub:"Thickness control, root causes, standards and lot history."},
+ {id:"chem",n:"Chemistry",g:"Monitor",tabs:["Bath analysis","Additions & stock"],sub:"Bath health, titrations and chemical stock."},
+ {id:"etp",n:"ETP · 150 KLD",g:"Monitor",tabs:["Process flow","Membranes","Water & sludge","Compliance"],sub:"Effluent treatment, reuse, zero liquid discharge and consent limits."},
+ {id:"maint",n:"Maintenance",g:"Operate",tabs:["Equipment health","PM schedule"],sub:"Equipment condition and planned maintenance."},
+ {id:"entry",n:"Data entry",g:"Operate",sub:"Manual readings that sensors don't capture yet."},
+ {id:"reports",n:"Reports & audit",g:"Operate",tabs:["Reports","Audit trail"],sub:"Scheduled reports and who changed what."},
+ {id:"settings",n:"Settings",g:"System",tabs:["Integration & roadmap","Users & roles","Alert rules"],sub:"Data sources, access and notification rules."}
+];
+const S={sec:"cc",tab:0,drawer:null,hover:null,paused:false,q:""};
+
+/* ---------- derived ---------- */
+function keysOf(s){return Object.keys(P).filter(k=>P[k].s===s);}
+function stageKeys(sg){return sg.etp?keysOf("etpd"):keysOf(sg.id);}
+const LINEKEYS=STAGES.filter(s=>!s.etp).flatMap(s=>keysOf(s.id));
+const ETPKEYS=ESTG.flatMap(s=>keysOf(s.id));
+function worst(keys){let w="ok";keys.forEach(k=>{const s=st(P[k]);if(s==="crit")w="crit";else if(s==="warn"&&w!=="crit")w="warn";});return w;}
+const SECKEYS={prod:LINEKEYS.concat(["thru"]),quality:keysOf("qa"),chem:["znc","kcl","bor","ph","bt","brt","clc","hcl","fe","pph"],etp:ETPKEYS.concat(keysOf("etpd"),keysOf("water")),maint:keysOf("eq")};
+function secStatus(id){let w=SECKEYS[id]?worst(SECKEYS[id]):"ok";if(id==="maint"&&PM.some(p=>p[3]==="crit"))w="crit";return w;}
+function eqHealth(e){ if(!e.k)return e.h; const m=P[e.k]; const r=Math.max(riskOf(m,m.v),riskOf(m,pred(m))); return e.id==="P-204"?Math.round(100-r*45):Math.round(clamp(e.h-r*30,40,100)); }
+function eqSt(e){const h=eqHealth(e);return h<70?"crit":h<85?"warn":"ok";}
 function alerts(){
   const out=[];
-  const seen=new Set();
-  MODS.concat([{id:"overview",keys:KPI}]).forEach(mod=>mod.keys.forEach(k=>{
-    if(seen.has(k)||k==="health")return; seen.add(k);
-    const m=M[k], s=st(m); if(s==="ok")return;
-    const a=ACT[k]||[m.l+" off spec","Check."];
-    out.push({s, t:a[0], d:m.l+" "+fmt(m)+" "+m.u+" · spec "+specTxt(m), a:a[1], mod:(MODS.find(x=>x.keys.includes(k))||{id:"overview"}).id, w:"now"});
-  }));
-  const hot=B.find(b=>b.cd>1.4);
-  if(hot) out.push({s:"warn",t:"Barrel "+hot.id+" current density high",d:hot.cd.toFixed(2)+" A/dm² on "+hot.part+". Spec 0.5–1.4 for barrel zinc.",a:"Check load weight. Under-loaded barrel burns the parts.",mod:"process",w:"3m"});
-  PM.filter(p=>p[2]!=="ok").forEach(p=>out.push({s:p[2],t:p[0],d:"Preventive maintenance · "+p[1],a:p[2]==="crit"?"Replace before next Z2 load.":"Plan within this shift.",mod:"maint",w:"PM"}));
-  out.push(...STATIC_ALERTS);
-  const rank={crit:0,warn:1,info:2};
-  return out.sort((a,b)=>rank[a.s]-rank[b.s]);
+  for(const k in P){const m=P[k],s=st(m);
+    if(s!=="ok") out.push({s,k,t:m.l+(s==="crit"?" out of spec":" near limit"),d:`${f(m)} ${m.u} · spec ${spec(m)}`,w:"now"});
+    else{const p=pred(m); if(stOf(p,m)==="crit") out.push({s:"pred",k,t:m.l+" predicted to breach",d:`${f(m)} → ${f(m,p)} ${m.u} in ~6 min · spec ${spec(m)}`,w:"+6m",conf:Math.round(55+40*reg(m).r2)});}
+  }
+  PM.filter(p=>p[3]!=="ok").forEach(p=>out.push({s:p[3],k:null,sec:"maint",tab:1,t:p[0],d:"Planned maintenance · "+p[2],w:"PM"}));
+  STOCK.filter(x=>x[4]==="crit").forEach(x=>out.push({s:"warn",k:null,sec:"chem",tab:1,t:x[0]+" stock low",d:x[3]+" days of cover left",w:"stock"}));
+  out.push({s:"info",k:null,sec:"prod",tab:1,t:"Barrel Z5 idle for 18 min",d:"Lot L-2241 waiting at loading bay",w:"18m"});
+  const r={crit:0,warn:1,pred:2,info:3};return out.sort((a,b)=>r[a.s]-r[b.s]);
 }
+function oee(){const A=(5/6)*.985+.05*(1/6),Pf=clamp(P.thru.v/1350,0,1),Q=P.fpy.v/100;return {A:A*100,P:Pf*100,Q:Q*100,O:A*Pf*Q*100};}
+function scrap(){return (100-P.fpy.v)*.85;}
+function bathHealth(){const ks=keysOf("zn");return ks.reduce((s,k)=>{const m=P[k],span=((m.hi??m.max)-(m.lo??m.min));return s+(st(m)==="crit"?0:clamp(1-Math.abs(m.v-m.id)/(span*.6),0,1));},0)/ks.length*100;}
+function twinSync(){return LINEKEYS.filter(k=>inSync(P[k])).length/LINEKEYS.length*100;}
+function etpComp(){const ks=keysOf("etpd");return ks.filter(k=>st(P[k])!=="crit").length/ks.length*100;}
+function plantHealth(){return clamp(100-alerts().reduce((s,a)=>s+(a.s==="crit"?5:a.s==="warn"?2:a.s==="pred"?1:0),0),30,100);}
+let plated=5120;
 
-/* ---------- small renderers ---------- */
-const ICON={ok:'<svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.2 2.2 4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  warn:'<svg viewBox="0 0 12 12"><path d="M6 2.5v4.2M6 9.2v.3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
-  crit:'<svg viewBox="0 0 12 12"><path d="M3.3 3.3l5.4 5.4M8.7 3.3L3.3 8.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'};
-const WORD={ok:"In spec",warn:"Watch",crit:"Action"};
-function chip(s){return `<span class="chip ${s}">${ICON[s]}${WORD[s]}</span>`;}
-function spark(m){
-  const w=160,h=30,p=2,a=m.h, lo=Math.min(...a), hi=Math.max(...a), r=(hi-lo)||1;
-  const x=i=>p+i*(w-2*p)/(a.length-1), y=v=>h-p-(v-lo)/r*(h-2*p-4);
-  const pts=a.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ");
-  const s=st(m), col=s==="ok"?"var(--accent)":`var(--${s})`;
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polygon points="${p},${h} ${pts} ${w-p},${h}" fill="${col}" opacity=".10"/><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><circle cx="${x(a.length-1)}" cy="${y(a[a.length-1])}" r="2.4" fill="${col}"/></svg>`;
-}
-function band(m){
-  const sc=v=>((clamp(v,m.min,m.max)-m.min)/(m.max-m.min)*100);
-  const s=st(m);
-  return `<div class="band" aria-hidden="true"><div class="ok" style="left:${sc(m.lo)}%;width:${sc(m.hi)-sc(m.lo)}%"></div><div class="pin ${s==="ok"?"":s}" style="left:${sc(m.v)}%"></div></div>`;
+/* ---------- atoms ---------- */
+function dot(s){return `<span class="dot ${s}" aria-hidden="true"></span>`;}
+function stx(s,lab){return `<span class="st ${s}">${s!=="ok"?dot(s):""}${lab||W[s]}</span>`;}
+function band(m){const sc=v=>(clamp(v,m.min,m.max)-m.min)/(m.max-m.min)*100;const s=st(m);const a=sc(m.lo??m.min),b=sc(m.hi??m.max);
+  return `<span class="band" aria-hidden="true"><span class="ok" style="left:${a}%;width:${b-a}%"></span><span class="id" style="left:${sc(m.id)}%"></span><span class="pin ${s==="ok"?"":s}" style="left:${sc(m.v)}%"></span></span>`;}
+function spark(a,s){const w=160,h=24,lo=Math.min(...a),hi=Math.max(...a),r=(hi-lo)||1;
+  const x=i=>1+i*(w-2)/(a.length-1),y=v=>h-2-(v-lo)/r*(h-6);const c=s==="ok"?"var(--norm)":`var(--${s})`;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${a.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ")}" fill="none" stroke="${c}" stroke-width="1.4" vector-effect="non-scaling-stroke"/><circle cx="${x(a.length-1)}" cy="${y(a[a.length-1])}" r="2" fill="${c}"/></svg>`;}
+function prow(k){const m=P[k],s=st(m);return `<button type="button" class="pr ${s}" data-p="${k}"><span class="n">${dot(s)}${m.l}</span><span class="v">${f(m)} <small>${m.u}</small></span>${band(m)}</button>`;}
+function rows(ks){return `<div class="rows" style="padding-top:6px">${ks.map(prow).join("")}</div>`;}
+function th(h){return `<th${h.startsWith("~")?' class="r"':""}>${h.replace(/^~/,"")}</th>`;}
+function tbl(h,rs){return `<div class="tw"><table class="t"><thead><tr>${h.map(th).join("")}</tr></thead><tbody>${rs.join("")}</tbody></table></div>`;}
+function panel(title,body,hint,id){return `<section class="panel"${id?` id="${id}"`:""}><header><h2>${title}</h2>${hint?`<span class="h">${hint}</span>`:""}</header>${body}</section>`;}
+function stats(items){return `<div class="stats">${items.map(i=>`<div class="stat"><div class="l">${i[0]}</div><div class="v ${i[2]||""}">${i[1]}</div>${i[3]?`<div class="small">${i[3]}</div>`:""}</div>`).join("")}</div>`;}
+function probBar(p,l){return `<span class="prob"><span class="tr"><span class="fl ${l}" style="width:${p}%"></span></span><span class="mono">${Math.round(p)}%</span></span>`;}
+function paramTable(keys,groupBy){
+  const rs=[];let g=null;
+  keys.forEach(k=>{const m=P[k],s=st(m),p=pred(m),ps=stOf(p,m),dv=dev(m),tr=trendOf(m);
+    if(groupBy){const sg=STAGES.find(x=>x.id===m.s);const gn=sg?sg.n:m.s;if(gn!==g){g=gn;const n=STAGES.indexOf(sg)+1;rs.push(`<tr class="grp"><td colspan="9">Stage ${n} · ${gn}<span class="gst">${stx(worst(keysOf(m.s)))}</span></td></tr>`);}}
+    rs.push(`<tr class="click" data-p="${k}"><td>${m.l}</td><td class="r ${s==="ok"?"":s}">${f(m)} <span class="small">${m.u}</span></td><td>${band(m)}</td><td class="r mono">${f(m,m.id)}</td><td class="r mono">${dv>=0?"+":""}${dv.toFixed(1)}%</td><td class="r ${ps==="ok"?"":ps}">${f(m,p)}</td><td class="small">${tr[1]} ${tr[0]}</td><td class="small">${m.std}</td><td>${stx(s)}</td></tr>`);});
+  return tbl(["Parameter","~Actual","Spec band · ideal tick","~Ideal","~Deviation","~Predicted +6 min","Trend","Standard","Status"],rs);
 }
 
 /* ---------- rail ---------- */
 function renderRail(){
-  const al=alerts(), nc=al.filter(a=>a.s==="crit").length;
-  let h=`<h6>Monitor</h6>`;
-  h+=nav("overview","Overview","");
-  h+=nav("line","Line map","");
-  h+=nav("alerts","Needs attention",`<span class="count">${al.filter(a=>a.s!=="info").length}</span>`);
-  h+=`<h6>Modules</h6>`;
-  MODS.forEach(m=>{h+=nav(m.id,m.n,`<span class="dot ${modStatus(m)}"></span>`);});
-  document.getElementById("rail").innerHTML=h;
+  let h="",g=null;
+  SEC.forEach(s=>{if(s.g!==g){g=s.g;h+=`<h6>${g}</h6>`;}const w=secStatus(s.id);
+    h+=`<button class="nav" type="button" data-sec="${s.id}" aria-current="${S.sec===s.id}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">${IC[s.id]}</svg>${s.n}${w!=="ok"?dot(w):""}</button>`;});
+  const ph=plantHealth();
+  h+=`<div class="foot"><div class="l">Plant health</div><div class="ph-v ${ph<70?"crit":ph<85?"warn":""}">${ph.toFixed(0)}<small>/100</small></div></div>`;
+  $("rail").innerHTML=h;
 }
-function nav(id,label,tail){return `<button class="nav" type="button" data-go="${id}" aria-current="${S.view===id}">${label}${tail}</button>`;}
 
-/* ---------- views ---------- */
-function head(title,sub,right){return `<div class="pagehead"><div><h1>${title}</h1><p>${sub}</p></div>${right?`<div class="right">${right}</div>`:""}</div>`;}
+/* ---------- page head ---------- */
+function head(){const s=SEC.find(x=>x.id===S.sec);
+  return `<div class="ph"><div><h1>${s.n}</h1><p>${s.sub}</p></div><div class="acts"><span class="small">Updated <span class="mono">${now()}</span></span><button class="ibtn" type="button" data-csv>Export CSV</button><button class="ibtn pri" type="button" data-open="exec">Executive report</button></div></div>`+
+  (s.tabs?`<div class="tabs" role="tablist">${s.tabs.map((t,i)=>`<button class="tab" role="tab" type="button" data-tab="${i}" aria-selected="${S.tab===i}">${t}</button>`).join("")}</div>`:"");}
 
-function vOverview(){
-  const al=alerts();
-  let h=head("Command center","Line status at a glance. Open any box for its detail.",`Updated <span class="mono">${timeStr()}</span>`);
-  if(S.showConcept) h+=`<div class="concept"><div><b>Concept layout for discussion.</b> Three levels, so nobody reads everything at once:
-    <ol><li>Overview: five numbers and what needs action</li><li>Module boxes: one box per area with its own status</li><li>Detail: open a box for trends, specs and records</li></ol></div><button type="button" data-hideconcept>Hide</button></div>`;
-  h+=`<section class="kpis" aria-label="Key numbers">`+KPI.map(k=>{const m=M[k],s=st(m);
-    const mod=(MODS.find(x=>x.keys.includes(k))||{}).id||"overview";
-    return `<button class="tile ${s}" type="button" data-go="${mod}" data-sel="${k}"><span class="lab">${m.l}<span class="dot ${s}" title="${WORD[s]}"></span></span><span class="val">${fmt(m)}<small>${m.u}</small></span>${spark(m)}<span class="sub">Spec ${specTxt(m)}</span></button>`;}).join("")
-    +(()=>{const n=al.filter(a=>a.s!=="info").length,c=al.filter(a=>a.s==="crit").length;
-      return `<button class="tile" type="button" data-go="alerts"><span class="lab">Open issues<span class="dot ${c?"crit":n?"warn":"ok"}"></span></span><span class="val">${n}<small>${c} need action now</small></span><span class="sub" style="margin-top:auto">Tap to see actions</span></button>`;})()
-    +`</section>`;
-  h+=`<section class="panel"><header><h2>Line map</h2><span class="hint">Tank order as parts travel · tap a tank</span></header>${lineMap()}</section>`;
-  h+=`<div class="split"><div class="stack"><div class="sectitle"><h2>Modules</h2><span>Each area in its own box</span></div><section class="mods">`+MODS.map(modCard).join("")+`</section></div>
-    <div class="stack"><div class="sectitle"><h2>Needs attention</h2><span>${al.length} items · worst first</span></div><section class="panel">${alertList(al.slice(0,6))}${al.length>6?`<button class="more" type="button" data-go="alerts">See all ${al.length} →</button>`:""}</section></div></div>`;
-  h+=pageFoot();
+/* ---------- Command center ---------- */
+function vCC(){
+  const al=alerts(),o=oee(),bh=bathHealth(),ec=etpComp(),sc=scrap();
+  const kwhToday=Math.round(P.kwh.v*plated);
+  const T=[
+    {l:"OEE",v:o.O.toFixed(1),u:"%",s:o.O<60?"crit":o.O<68?"warn":"ok",sub:`A ${o.A.toFixed(0)} · P ${o.P.toFixed(0)} · Q ${o.Q.toFixed(0)}`,go:'data-sec="prod" data-tab="1"'},
+    {l:"First-pass yield",m:"fpy"},
+    {l:"Scrap",v:sc.toFixed(2),u:"%",s:sc>3?"crit":sc>2.2?"warn":"ok",sub:"Target ≤ 2.0",hist:P.fpy.h.map(v=>(100-v)*.85),go:'data-sec="quality"'},
+    {l:"Bath health",v:bh.toFixed(0),u:"/100",s:bh<60?"crit":bh<75?"warn":"ok",sub:"Tank 05 index",go:'data-sec="chem"'},
+    {l:"Energy today",v:kwhToday.toLocaleString("en-IN"),u:"kWh",s:st(P.kwh),sub:`${f(P.kwh)} kWh/kg · spec ${spec(P.kwh)}`,hist:P.kwh.h,go:'data-p="kwh"'},
+    {l:"ETP compliance",v:ec.toFixed(0),u:"%",s:ec<100?"crit":"ok",sub:`${keysOf("etpd").filter(k=>st(P[k])!=="crit").length} of ${keysOf("etpd").length} discharge limits met`,go:'data-sec="etp" data-tab="3"'}
+  ];
+  let h=head();
+  h+=`<section class="kpis" aria-label="Key numbers">`+T.map(t=>{
+    if(t.m){const m=P[t.m],s=st(m);return `<button class="k ${s}" type="button" data-p="${t.m}"><span class="lab">${t.l}</span><span class="v">${f(m)}<small>${m.u}</small></span>${spark(m.h,s)}<span class="s">Spec ${spec(m)}</span></button>`;}
+    return `<button class="k ${t.s}" type="button" ${t.go}><span class="lab">${t.l}</span><span class="v">${t.v}<small>${t.u}</small></span>${t.hist?spark(t.hist,t.s):`<svg aria-hidden="true"></svg>`}<span class="s">${t.sub}</span></button>`;}).join("")+`</section>`;
+  h+=panel("Zinc line · end-to-end process",lineMap(),"11 stages in process order · click a stage");
+  h+=`<div class="g2">`+panel("Predictive risk register",riskTable(),"8 models · click a risk for drivers and action")+
+     panel("Needs attention",alertList(al.slice(0,6))+(al.length>6?`<div class="pad" style="border-top:1px solid var(--line-2)"><button class="link" type="button" data-open="alerts">All ${al.length} alerts</button></div>`:""),`${al.filter(a=>a.s==="crit").length} out of spec`)+`</div>`;
+  h+=`<div class="mods">`+[
+    ["Zinc bath · Tank 05","chem",0,["znc","ph","bt","brt"]],["Pre-treatment","prod",0,["clc","cle","rc1","fe"]],["Passivation & bake","prod",0,["pph","pt","oven","bdelay"]],
+    ["Latest quality outputs","quality",0,["thk","adh","fpy"]],["Equipment","maint",0,["dp","anode","ripple"]],["Environmental status","etp",3,["eph","ni","ezn","cod"]]
+  ].map(([n,sec,tab,ks])=>{const w=worst(ks);return `<section class="mod ${w}"><header><h3>${n}</h3>${w!=="ok"?stx(w):""}<button class="link" type="button" data-sec="${sec}" data-tab="${tab}">Open</button></header>${rows(ks)}</section>`;}).join("")+`</div>`;
   return h;
 }
-function modCard(mod){
-  const s=modStatus(mod), keys=mod.keys.slice(0,3);
-  const worst=mod.keys.map(k=>M[k]).filter(m=>st(m)!=="ok").length;
-  return `<button class="mod ${s}" type="button" data-go="${mod.id}"><header><div><h3>${mod.n}</h3><p>${mod.p}</p></div>${chip(s)}</header>
-  <div class="rows">${keys.map(k=>{const m=M[k];return `<div class="mrow"><span class="k"><span class="dot ${st(m)}"></span>${m.l}</span><span class="v">${fmt(m)} <small>${m.u}</small></span>${band(m)}</div>`;}).join("")}</div>
-  <footer><span>${mod.keys.length} parameters · ${worst?worst+" off target":"all in band"}</span><span>Open →</span></footer></button>`;
-}
 function lineMap(){
-  const S1=[["01","Soak degrease",["degt"]],["02","Rinse",[]],["03","HCl pickle",["hcl","fe"]],["04","Rinse",[]],["05","Electro-clean",[]],["06","Rinse",[]],
-    ["07","Zinc plating · 6 barrels",["zn","naoh","carb","brt","btemp"],"zinc"],["08","Drag-out rinse",[]],["09","Nitric dip",[]],["10","Trivalent passivate",["pph","ptemp"]],["11","Sealer",[]],["12","Spin dryer",[]],["13","Bake 200 °C",["oven"]]];
-  const html=S1.map(([no,nm,ks,cls],i)=>{
-    let s="ok"; ks.forEach(k=>{const x=st(M[k]); if(x==="crit")s="crit"; else if(x==="warn"&&s!=="crit")s="warn";});
-    const rd=ks.length?fmt(M[ks[0]])+" "+M[ks[0]].u.replace(" of target",""):"";
-    const inner=cls==="zinc"?B.map(b=>`<span class="brl ${b.idle?"idle":b.cd>1.4?"warn":""}" title="${b.id} · ${b.idle?"idle":b.part}">${b.id}</span>`).join(""):`<span class="liq"></span>`;
-    const target=cls==="zinc"?"chem":ks.length?(["degt","hcl","fe","pph","ptemp","oven"].includes(ks[0])?"pretreat":"chem"):"pretreat";
-    return `<button type="button" class="st ${s} ${cls||""}" data-go="${cls==="zinc"?"process":target}" title="${nm}"><span class="no">${no}</span><span class="tank">${inner}</span><span class="nm">${nm}</span><span class="rd">${rd||"&nbsp;"}</span>${i<S1.length-1?'<span class="flow"></span>':""}</button>`;
-  }).join("");
-  return `<div class="linewrap"><div class="linemap">${html}</div></div><div class="legend"><span><span class="dot ok"></span>In spec</span><span><span class="dot warn"></span>Watch</span><span><span class="dot crit"></span>Action</span><span class="mono">Z1–Z6 = plating barrels</span></div>`;
+  return `<div class="lwrap"><div class="lmap">`+STAGES.map((sg,i)=>{const ks=stageKeys(sg),w=worst(ks);
+    const show=ks.find(k=>st(P[k])!=="ok")||ks[0];const m=P[show];
+    return `<button type="button" class="stg ${w}" data-stage="${sg.id}"><span class="no">${String(i+1).padStart(2,"0")}</span><span class="tk${sg.etp?" etp":""}"></span><span class="nm">${sg.n}</span><span class="rd">${f(m)} ${m.u.replace(" of target","")}</span><span class="sl">${W[w]}</span></button>`;}).join("")+`</div></div>`;
+}
+function riskTable(){
+  const rs=RISKS.map(r=>({r,x:risk(r)})).sort((a,b)=>b.x.p-a.x.p);
+  return tbl(["Risk","Stage","Probability","~Expected in","Level"],rs.map(({r,x})=>`<tr class="click" data-risk="${r.id}"><td><b class="rn">${r.n}</b><div class="small">${r.eng}</div></td><td>${r.stage}</td><td>${probBar(x.p,x.lvl)}</td><td class="r mono">${x.eta==null?"–":x.eta===0?"now":Math.round(x.eta)+" min"}</td><td>${stx(x.lvl,LVL[x.lvl])}</td></tr>`));
 }
 function alertList(al){
-  if(!al.length) return `<div class="empty">Nothing needs attention right now.</div>`;
-  return `<ul class="alist">`+al.map(a=>`<li data-go="${a.mod}" tabindex="0"><span class="sev ${a.s}"></span><div><div class="t">${a.t}</div><div class="d">${a.d}</div><div class="act"><b>Do:</b> ${a.a}</div></div><span class="when">${a.w}</span></li>`).join("")+`</ul>`;
+  if(!al.length)return `<div class="pad small">Nothing needs attention.</div>`;
+  const L={crit:"OUT",warn:"WATCH",pred:"PREDICT",info:"INFO"};
+  return `<ul class="al">`+al.map(a=>`<li tabindex="0" ${a.k?`data-p="${a.k}"`:`data-sec="${a.sec}" data-tab="${a.tab||0}"`}><span class="sv ${a.s}">${L[a.s]}</span><div><div class="t">${a.t}</div><div class="d">${a.d}</div>${a.k?`<div class="a"><b>Action:</b> ${act(a.k)}${a.conf?` <span class="small">· confidence ${a.conf}%</span>`:""}</div>`:""}</div><span class="w">${a.w}</span></li>`).join("")+`</ul>`;
 }
-function vAlerts(){
-  const al=alerts();
-  return head("Needs attention","Every open issue, sorted by severity. Each one says what to do.")+`<section class="panel">${alertList(al)}</section>`+pageFoot();
-}
-function vLine(){
-  return head("Line map","13 stations in the order parts travel. Tap a tank to open its module.")+`<section class="panel">${lineMap()}</section>
-  <section class="panel"><header><h2>Barrels now</h2><span class="hint">Zinc tank, barrels Z1–Z6</span></header>${barrelTable()}</section>`+pageFoot();
-}
-function barrelTable(){
-  return `<div class="tscroll"><table class="t"><thead><tr><th>Barrel</th><th>Part</th><th class="r">Load kg</th><th class="r">Current A</th><th class="r">A/dm²</th><th class="r">Time left</th><th>Status</th></tr></thead><tbody>`+
-  B.map(b=>b.idle?`<tr><td class="mono">${b.id}</td><td style="color:var(--muted)">Idle · waiting for load</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td><span class="chip warn">${ICON.warn}Idle</span></td></tr>`:
-  `<tr><td class="mono">${b.id}</td><td>${b.part}${/10\.9|· 10$/.test(b.part)?' <span class="note">· bake required</span>':""}</td><td class="r">${b.kg}</td><td class="r">${Math.round(b.amp)}</td><td class="r">${b.cd.toFixed(2)}</td><td class="r">${Math.max(0,Math.round(b.left))} min</td><td>${chip(b.cd>1.4?"warn":"ok")}</td></tr>`).join("")+`</tbody></table></div>`;
-}
-function vModule(mod){
-  if(!S.sel || !mod.keys.includes(S.sel)) S.sel=mod.keys.find(k=>st(M[k])!=="ok")||mod.keys[0];
-  const m=M[S.sel];
-  let h=`<div><button class="back" type="button" data-go="overview">← Overview</button></div>`;
-  h+=head(mod.n,mod.p+". Tap a parameter to see its trend.",chip(modStatus(mod)));
-  h+=`<div class="detail"><section class="panel"><header><h2>Parameters</h2><span class="hint">Green band = spec</span></header><div class="plist">`+
-    mod.keys.map(k=>{const x=M[k];return `<button type="button" class="prow" data-sel="${k}" aria-pressed="${k===S.sel}"><span class="k"><span class="dot ${st(x)}"></span>${x.l}</span><span class="v">${fmt(x)}<small>${x.u}</small></span>${band(x)}<span class="spec">Spec ${specTxt(x)} ${x.u}</span></button>`;}).join("")+`</div></section>
-    <section class="panel"><header><h2>${m.l}</h2><span class="hint">Last ${HN} readings · ${m.u}</span></header><div class="chartbox" id="chartbox">${trend(m)}</div>
-    <div class="body note" style="padding-top:0">${(ACT[S.sel]||["",""])[1]}</div></section></div>`;
-  if(mod.extra==="barrels") h+=`<section class="panel"><header><h2>Barrels now</h2><span class="hint">Barrel zinc spec 0.5–1.4 A/dm²</span></header>${barrelTable()}</section>`;
-  if(mod.extra==="titration") h+=`<section class="panel"><header><h2>Lab titrations today</h2><span class="hint">Next due 18:00</span></header><div class="tscroll"><table class="t"><thead><tr><th>Time</th><th class="r">Zn g/L</th><th class="r">NaOH g/L</th><th class="r">Na₂CO₃ g/L</th><th>By</th><th>Addition made</th></tr></thead><tbody>
-    <tr><td class="mono">06:10</td><td class="r">10.4</td><td class="r">131</td><td class="r">54.8</td><td>R. Kumar</td><td>None</td></tr>
-    <tr><td class="mono">10:05</td><td class="r">10.1</td><td class="r">126</td><td class="r">55.2</td><td>S. Yadav</td><td>NaOH 8 kg</td></tr>
-    <tr><td class="mono">14:00</td><td class="r">10.2</td><td class="r">128</td><td class="r">55.5</td><td>R. Kumar</td><td>Brightener 2 L</td></tr></tbody></table></div></section>`;
-  if(mod.extra==="quality"){
-    const mx=Math.max(...DEFECTS.map(d=>d[1]));
-    h+=`<div class="row2"><section class="panel"><header><h2>Salt spray chamber</h2><span class="hint">Neutral salt spray, ASTM B117</span></header><div class="tscroll"><table class="t"><thead><tr><th>Lot</th><th>Part</th><th>Test</th><th>Result</th></tr></thead><tbody>`+
-      SALT.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="dot ${r[4]}"></span> ${r[3]}</td></tr>`).join("")+`</tbody></table></div></section>
-      <section class="panel"><header><h2>Rejects by defect</h2><span class="hint">This week · pieces ×100</span></header><div class="bars">`+
-      DEFECTS.map(d=>`<div class="bar"><span>${d[0]}</span><span class="tr"><span class="fl" style="width:${d[1]/mx*100}%"></span></span><span class="n">${d[1]}</span></div>`).join("")+`</div></section></div>`;
+
+/* ---------- Production ---------- */
+function vProd(){
+  let h=head();
+  if(S.tab===0){
+    const dvn=LINEKEYS.filter(k=>st(P[k])!=="ok").length,pb=LINEKEYS.filter(k=>st(P[k])!=="crit"&&stOf(pred(P[k]),P[k])==="crit").length;
+    h+=stats([["Twin sync",twinSync().toFixed(0)+"<small>%</small>","","actual ≈ ideal"],["Parameters mirrored",LINEKEYS.length,"","10 line stages"],["Off ideal now",dvn,dvn?"warn":"","outside normal band"],["Predicted breaches",pb,pb?"warn":"","next ~6 min"]]);
+    h+=panel("Actual vs ideal, by stage",paramTable(LINEKEYS,true),"Click a row for trend, prediction and action");
+  } else {
+    const o=oee();
+    h+=stats([["OEE",o.O.toFixed(1)+"<small>%</small>",o.O<60?"crit":o.O<68?"warn":"","world class ≥ 85"],["Availability",o.A.toFixed(1)+"<small>%</small>","","5 of 6 barrels running"],["Performance",o.P.toFixed(1)+"<small>%</small>","","vs 1,350 kg/h rated"],["Quality",o.Q.toFixed(1)+"<small>%</small>","","first-pass yield"],["Plated this shift",Math.round(plated).toLocaleString("en-IN")+"<small>kg</small>","","plan 9,800 kg"]]);
+    h+=panel("Barrels now",barrels(),"Barrel zinc current density 0.5–1.4 A/dm²");
+    h+=`<div class="g2e">`+panel("Output by part, this shift",tbl(["Part","~Lots","~kg","~Rejects"],[["M10×1.25 flange bolt · 10.9",9,"1,420","0.8%"],["M8 hex nut · Cl 8",11,"1,310","1.4%"],["M12 stud · 8.8",7,"980","2.1%"],["M14 wheel nut · 10",6,"860","1.1%"],["M6 weld nut",5,"550","3.2%"]].map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r">${r[2]}</td><td class="r">${r[3]}</td></tr>`)))+
+      panel("Cost per kg",rows(["cost","chem","znkg","kwh"]),"Click a row for trend")+`</div>`;
   }
-  if(mod.extra==="pm") h+=`<section class="panel"><header><h2>Preventive maintenance</h2><span class="hint">Next 3 weeks</span></header><div class="tscroll"><table class="t"><thead><tr><th>Task</th><th>Due</th><th>Status</th></tr></thead><tbody>`+
-    PM.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${chip(p[2])}</td></tr>`).join("")+`</tbody></table></div></section>`;
-  return h+pageFoot();
+  return h;
 }
-function trend(m){
-  const W=640,H=250,L=48,R=14,T=14,Bm=26, a=m.h;
-  const lo=Math.min(m.min,...a), hi=Math.max(m.max,...a);
-  const x=i=>L+i*(W-L-R)/(a.length-1), y=v=>T+(hi-v)/(hi-lo)*(H-T-Bm);
-  const ticks=[]; const step=niceStep((hi-lo)/4); for(let t=Math.ceil(lo/step)*step;t<=hi+1e-9;t+=step)ticks.push(t);
-  const pts=a.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ");
-  const bLo=y(Math.max(m.lo,lo)), bHi=y(Math.min(m.hi,hi));
-  const s=st(m), col=s==="ok"?"var(--accent)":`var(--${s})`;
-  let g=`<svg viewBox="0 0 ${W} ${H}" id="trend" role="img" aria-label="${m.l} trend, latest ${fmt(m)} ${m.u}">`;
-  g+=`<rect x="${L}" y="${bHi}" width="${W-L-R}" height="${bLo-bHi}" fill="var(--band)"/>`;
-  g+=`<g class="axis">`+ticks.map(t=>`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line-2)" stroke-width="1"/><text x="${L-8}" y="${y(t)+3.5}" text-anchor="end">${fmtTick(t,step)}</text>`).join("")+
-    `<text x="${L}" y="${H-6}">−${HN} readings</text><text x="${W-R}" y="${H-6}" text-anchor="end">now</text></g>`;
-  [["lo",m.lo],["hi",m.hi]].forEach(([n,v])=>{ if(v>lo&&v<hi) g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--good)" stroke-width="1" stroke-dasharray="4 4" opacity=".7"/>`; });
-  g+=`<polygon points="${x(0)},${H-Bm} ${pts} ${x(a.length-1)},${H-Bm}" fill="${col}" opacity=".08"/>`;
-  g+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
-  g+=`<circle cx="${x(a.length-1)}" cy="${y(a[a.length-1])}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`;
-  if(S.hover!=null && S.hover<a.length){ const i=S.hover; g+=`<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H-Bm}" stroke="var(--muted)" stroke-width="1"/><circle cx="${x(i)}" cy="${y(a[i])}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`; }
-  g+=`<rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-Bm}" fill="transparent" data-hit="1"/>`;
+function barrels(){return tbl(["Barrel","Part","~Load kg","~Current A","~A/dm²","~Time left","Status"],B.map(b=>b.idle?`<tr><td class="mono">${b.id}</td><td class="small">Idle · waiting for L-2241</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td>${stx("warn","Idle")}</td></tr>`:
+  `<tr class="click" data-p="cd"><td class="mono">${b.id}</td><td>${b.part}</td><td class="r">${b.kg}</td><td class="r">${Math.round(b.amp)}</td><td class="r ${b.cd>1.4?"crit":b.cd>1.33?"warn":""}">${b.cd.toFixed(2)}</td><td class="r">${Math.max(0,Math.round(b.left))} min</td><td>${stx(b.cd>1.4?"crit":b.cd>1.33?"warn":"ok")}</td></tr>`));}
+
+/* ---------- Quality ---------- */
+function cap(m){const a=m.h.map((v,i)=>v+(m.j?m.j[i]:0)),mean=a.reduce((s,v)=>s+v,0)/a.length,sd=Math.sqrt(a.reduce((s,v)=>s+(v-mean)**2,0)/(a.length-1))||1e-6;
+  return {mean,sd,cp:(m.hi-m.lo)/(6*sd),cpk:Math.min(m.hi-mean,mean-m.lo)/(3*sd)};}
+function vQuality(){
+  let h=head();
+  if(S.tab===0){
+    const c=cap(P.thk),thkPts=P.thk.h.map((v,i)=>v+P.thk.j[i]),cz=cap(P.znc),cc=cap(P.cd),defects=DEFECTS.reduce((s,d)=>s+d[1],0);
+    const cs=v=>v<1.0?"crit":v<1.33?"warn":"";
+    h+=stats([["Cp · thickness",c.cp.toFixed(2),cs(c.cp)],["Cpk · thickness",c.cpk.toFixed(2),cs(c.cpk),"≥ 1.33 capable"],["Cpk · zinc metal",cz.cpk.toFixed(2),cs(cz.cpk)],["Cpk · current density",cc.cpk.toFixed(2),cs(cc.cpk)],["Defects last shift",defects,"",`${(defects/2040*100).toFixed(2)}% defect density`],["Adhesion pass",f(P.adh)+"<small>%</small>",st(P.adh)==="ok"?"":st(P.adh),"ASTM B571"]]);
+    h+=panel("Coating thickness · individuals control chart",`<div class="chart">${spcChart(thkPts,c.mean,c.sd)}</div>`,`X̄ ${c.mean.toFixed(2)} µm · σ ${c.sd.toFixed(2)} · limits ±3σ · spec 8–12`);
+    h+=`<div class="g2e">`+panel("Defect Pareto",`<div class="bars">${DEFECTS.map(d=>`<div class="bar"><span>${d[0]}</span><span class="tr"><span class="fl" style="width:${d[1]/13*100}%"></span></span><span class="n">${d[1]}</span></div>`).join("")}</div>`,"Last shift · pieces ×100")+
+      panel("Root cause attribution",`<div class="bars">${ROOT.map(d=>`<div class="bar wide"><span>${d[0]}</span><span class="tr"><span class="fl" style="width:${d[1]/25*100}%"></span></span><span class="n">${d[1]}%</span></div>`).join("")}</div><div class="pad small" style="padding-top:0">Share of defects correlated with each process cause, last 30 days.</div>`,"Correlation model")+`</div>`;
+  } else if(S.tab===1){
+    h+=panel("Critical-to-quality register",tbl(["CTQ","Requirement","Standard","Method","Frequency","~Latest","Status"],CTQ.map(r=>{const m=r[5]?P[r[5]]:null,s=m?st(m):r[6];
+      return `<tr ${m?`class="click" data-p="${r[5]}"`:""}><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td class="r mono">${m?f(m)+" "+m.u:"–"}</td><td>${stx(s)}</td></tr>`;})),"Standards typical for zinc-plated fasteners");
+  } else if(S.tab===2){
+    h+=`<div class="labs">${LAB.map(l=>`<div class="lab ${l[3]}"><div class="l">${l[0]}</div><div class="v">${l[2]}</div><div class="small">${l[1]}</div></div>`).join("")}</div>`;
+    h+=panel("Salt spray chamber",tbl(["Lot","Part","Requirement","Result"],SALT.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${stx(r[4],r[3])}</td></tr>`)),"Neutral salt spray · ASTM B117");
+  } else {
+    const q=S.q.toLowerCase(),rs=LOTS.filter(r=>!q||r.join(" ").toLowerCase().includes(q));
+    h+=panel("Lot genealogy",`<div class="pad" style="padding-bottom:4px"><label class="small" for="lotq">Search lot, part or customer</label><br><input class="search" id="lotq" type="search" value="${S.q.replace(/"/g,"&quot;")}" placeholder="e.g. L-2231 or flange"></div>`+
+      tbl(["Lot","Part","Customer","Barrel","Plated","~Thickness µm","Bake","Salt spray","Status"],rs.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="mono">${r[3]}</td><td class="mono">${r[4]}</td><td class="r mono">${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td><td>${stx(r[8]==="On hold"?"crit":"ok",r[8])}</td></tr>`)),"Part → barrel → bath readings → customer");
+  }
+  return h;
+}
+function spcChart(a,mean,sd){
+  const W=900,H=240,L=40,R=90,T=12,Bm=22,lo=6.5,hi=13.5;const ucl=mean+3*sd,lcl=mean-3*sd;
+  const x=i=>L+i*(W-L-R)/(a.length-1),y=v=>T+(hi-v)/(hi-lo)*(H-T-Bm);
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Thickness control chart">`;
+  g+=`<g class="ax">`+[7,8,9,10,11,12,13].map(t=>`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line-2)"/><text x="${L-6}" y="${y(t)+3.5}" text-anchor="end">${t}</text>`).join("")+`</g>`;
+  [[8,"LSL 8.00","var(--crit)","4 3"],[12,"USL 12.00","var(--crit)","4 3"],[ucl,"UCL "+ucl.toFixed(2),"var(--ink-2)","2 3"],[lcl,"LCL "+lcl.toFixed(2),"var(--ink-2)","2 3"],[mean,"X̄ "+mean.toFixed(2),"var(--ink-2)","0"]].forEach(([v,n,c,da])=>{g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="${da}"/><text x="${W-R+6}" y="${y(v)+3.5}" fill="${c}" font-size="10.5" font-family="IBM Plex Mono,monospace">${n}</text>`;});
+  g+=`<polyline points="${a.map((v,i)=>x(i)+","+y(v)).join(" ")}" fill="none" stroke="var(--norm)" stroke-width="1.3"/>`;
+  g+=a.map((v,i)=>{const out=v<8||v>12,oc=v>ucl||v<lcl;return `<circle cx="${x(i)}" cy="${y(v)}" r="${out||oc?3.5:2.2}" fill="${out?"var(--crit)":oc?"var(--warn)":"var(--norm)"}"/>`;}).join("");
   return g+`</svg>`;
 }
-function niceStep(r){const p=Math.pow(10,Math.floor(Math.log10(r))),n=r/p;return (n<1.5?1:n<3?2:n<7?5:10)*p;}
-function fmtTick(t,step){const d=step<.1?2:step<1?1:0;return (+t.toFixed(d)).toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d});}
-function pageFoot(){return `<footer class="page"><span>Concept layout · demo values are simulated in the browser, no plant connection</span><span>Zinc Protech Plant 01 · Barrel Zn-2</span></footer>`;}
+
+/* ---------- Chemistry ---------- */
+function vChem(){
+  let h=head();
+  if(S.tab===0){
+    const bh=bathHealth();
+    h+=stats([["Bath health",bh.toFixed(0)+"<small>/100</small>",bh<60?"crit":bh<75?"warn":""],["Ampere-hours since last brightener","18,400"],["TOC (organics)","22.6<small>ppm</small>","warn","carbon treat above 25"],["Next titration","18:00"]]);
+    h+=`<div class="g2e">`+panel("Zinc bath · Tank 05",rows(["znc","kcl","bor","ph","bt","brt"]),"Acid chloride zinc")+
+      panel("Pre-treatment & passivate",rows(["clc","clt","hcl","fe","pph","pt","sealc"]),"Click a row for trend")+`</div>`;
+    h+=panel("Lab titrations today",tbl(["Time","~Zn g/L","~KCl g/L","~Boric g/L","~pH","By","Addition made"],TITR.map(r=>`<tr><td class="mono">${r[0]}</td><td class="r">${r[1]}</td><td class="r">${r[2]}</td><td class="r">${r[3]}</td><td class="r">${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td></tr>`)),`<button class="link" type="button" data-sec="entry">Enter a titration</button>`);
+  } else {
+    h+=panel("Chemical stock",tbl(["Chemical","~Stock","~Use per day","~Days of cover","Status"],STOCK.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r">${r[2]}</td><td class="r ${r[4]==="ok"?"":r[4]}">${r[3]}</td><td>${stx(r[4])}</td></tr>`)),"Reorder below 7 days");
+    h+=panel("Additions log",tbl(["Time","Chemical","Qty","Tank","By","Basis"],ADD.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`)));
+  }
+  return h;
+}
+
+/* ---------- ETP ---------- */
+function vEtp(){
+  let h=head();
+  if(S.tab===0){
+    const crit=ESTG.filter(s=>worst(keysOf(s.id))==="crit").length;
+    h+=stats([["Inlet flow",f(P.inflow)+"<small>m³/h</small>"],["Treated today","112<small>m³</small>","","capacity 150 KLD"],["Water recycled",f(P.recyc)+"<small>%</small>",st(P.recyc)==="ok"?"":st(P.recyc)],["Stages critical",crit,crit?"crit":""],["Discharge compliance",etpComp().toFixed(0)+"<small>%</small>",etpComp()<100?"crit":""]]);
+    h+=panel("ETP process flow",`<div class="tw"><div class="flow">${ESTG.map((sg,i)=>{const ks=keysOf(sg.id),w=worst(ks),show=ks.find(k=>st(P[k])!=="ok")||ks[0],m=P[show];
+      return `${i?'<span class="arr">→</span>':""}<button type="button" class="fn ${w==="ok"?"":w}" data-estage="${sg.id}"><span class="no">${String(i+1).padStart(2,"0")}</span><b>${sg.n}</b><span class="mono">${f(m)} ${m.u}</span><span class="sl">${W[w]}</span></button>`;}).join("")}</div></div>`,"Collection → chemical → clarifier → UF → RO → DM → ZLD · click a stage");
+    h+=panel("Stage status & CTQ coverage",tbl(["#","Stage","~CTQs","Key parameters","Worst status"],ESTG.map((sg,i)=>{const ks=keysOf(sg.id);return `<tr class="click" data-estage="${sg.id}"><td class="mono">${i+1}</td><td>${sg.n}</td><td class="r">${ks.length}</td><td class="w small">${ks.map(k=>P[k].l).join(", ")}</td><td>${stx(worst(ks))}</td></tr>`;})));
+    h+=panel("Chemical treatment · dosing today",tbl(["Chemical","Purpose","~Dosed","Control","Status"],DOSE.map(r=>`<tr class="click" data-p="${r[4]}"><td>${r[0]}</td><td>${r[1]}</td><td class="r">${r[2]}</td><td>${r[3]}</td><td>${stx(st(P[r[4]]))}</td></tr>`)));
+  } else if(S.tab===1){
+    h+=`<div class="g2e">`+panel("Ultrafiltration",rows(["tmp","sdi"]),"UF-1")+panel("Reverse osmosis",rows(["rop","rorec1","rorec","perm","permph"]),"RO-1 / RO-2 · next CIP 16 Oct")+`</div>`;
+  } else if(S.tab===2){
+    h+=`<div class="g2e">`+panel("Water & reuse",rows(["recyc","water","dm","silica"]))+panel("Sludge & zero liquid discharge",rows(["sludge","cake","rejtds","mee","vib"]),"Evaporator 18 h/day")+`</div>`;
+  } else {
+    h+=panel("Discharge vs consent limits",tbl(["Parameter","~Result","~Limit","Predicted +6 min","Status"],keysOf("etpd").map(k=>{const m=P[k],s=st(m),p=pred(m),ps=stOf(p,m);return `<tr class="click" data-p="${k}"><td>${m.l}</td><td class="r ${s==="ok"?"":s}">${f(m)} ${m.u}</td><td class="r mono">${spec(m)}</td><td class="${ps==="ok"?"":ps}">${f(m,p)}</td><td>${stx(s)}</td></tr>`;})),"Illustrative limits · confirm against the plant's consent to operate");
+  }
+  return h;
+}
+
+/* ---------- Maintenance ---------- */
+function vMaint(){
+  let h=head();
+  if(S.tab===0){
+    const ok=EQUIP.filter(e=>eqSt(e)==="ok").length;
+    h+=stats([["Assets healthy",`${ok}<small>/ ${EQUIP.length}</small>`,ok<EQUIP.length?"warn":""],["PM due this week",PM.filter(p=>p[3]!=="ok").length+2],["PM overdue",PM.filter(p=>p[3]==="crit").length,"crit"],["MTBF · rectifiers","412<small>h</small>"]]);
+    h+=panel("Equipment health",tbl(["Asset","Type","Area","Health","Drift signal","Status"],EQUIP.map(e=>{const hv=eqHealth(e),s=eqSt(e),m=e.k?P[e.k]:null;
+      return `<tr ${m?`class="click" data-p="${e.k}"`:""}><td><b class="rn">${e.id}</b> · ${e.n}</td><td>${e.t}</td><td>${e.a}</td><td><span class="prob"><span class="tr"><span class="fl ${s}" style="width:${hv}%"></span></span><span class="mono">${hv}%</span></span></td><td class="small">${m?m.l+" "+f(m)+" "+m.u+" · "+trendOf(m)[0]:"Vibration & run-hours · stable"}</td><td>${stx(s)}</td></tr>`;})),"Health from live drift signals");
+    h+=panel("Rectifiers",tbl(["Unit","Barrel","~V","~A","~Ripple %","~Temp °C"],RECT.map(r=>`<tr><td class="mono">${r[0]}</td><td class="mono">${r[1]}</td><td class="r">${r[2]}</td><td class="r">${r[3]}</td><td class="r ${r[4]>4?"warn":""}">${r[4]}</td><td class="r ${r[5]>50?"warn":""}">${r[5]}</td></tr>`)));
+  } else h+=panel("Planned maintenance",tbl(["Task","Asset","Due","Status"],PM.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td><td>${stx(p[3])}</td></tr>`)),"Next 3 weeks");
+  return h;
+}
+
+/* ---------- Data entry / reports / settings ---------- */
+function vEntry(){
+  let h=head();
+  h+=panel("Zinc bath titration · Tank 05",`<form id="tform" autocomplete="off"><div class="form">
+    ${[["e_zn","Zinc metal (g/L)","30.4"],["e_kcl","KCl (g/L)","205"],["e_bor","Boric acid (g/L)","26.1"],["e_ph","pH","5.15"]].map(x=>`<div class="fld"><label for="${x[0]}">${x[1]}</label><input id="${x[0]}" inputmode="decimal" value="${x[2]}" required></div>`).join("")}
+    <div class="fld"><label for="e_by">Entered by</label><select id="e_by"><option>R. Kumar</option><option>S. Yadav</option><option>M. Singh</option></select></div>
+    <div class="fld"><label for="e_add">Addition made</label><input id="e_add" placeholder="e.g. KCl 10 kg"></div>
+  </div><div class="pad" style="padding-top:0;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="submit">Save reading</button><span class="small" style="align-self:center">Saved readings update Chemistry and the audit trail.</span></div></form>`,"Replaces the paper log sheet");
+  h+=panel("Recent entries",tbl(["Time","~Zn g/L","~KCl g/L","~Boric g/L","~pH","By","Addition made"],TITR.slice().reverse().map(r=>`<tr><td class="mono">${r[0]}</td><td class="r">${r[1]}</td><td class="r">${r[2]}</td><td class="r">${r[3]}</td><td class="r">${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td></tr>`)));
+  return h;
+}
+function vReports(){
+  let h=head();
+  if(S.tab===0) h+=panel("Scheduled reports",tbl(["Report","Schedule","Last generated",""],REPORTS.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="mono">${r[2]}</td><td>${r[0]==="Executive summary"?`<button class="ibtn" type="button" data-open="exec">Open</button>`:`<button class="ibtn" type="button" data-toast="${r[0]} queued (demo)">Generate</button>`}</td></tr>`)));
+  else h+=panel("Audit trail",tbl(["Time","User","Action","Detail"],AUDIT.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`)),"Today");
+  return h;
+}
+function vSettings(){
+  let h=head();
+  if(S.tab===0) h+=panel("Data sources & instrumentation roadmap",tbl(["Source","Connection","Status","Update rate","Roadmap"],INTEG.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${stx(r[2]==="Online"?"ok":"warn",r[2])}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`)));
+  else if(S.tab===1) h+=panel("Users & roles",tbl(["Name","Role","Access"],USERS.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`)));
+  else h+=panel("Alert rules",tbl(["Trigger","Condition","Notify","Channel"],RULES.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`)));
+  return h;
+}
+
+/* ---------- drawer ---------- */
+function drawerHTML(){
+  const d=S.drawer;if(!d)return "";
+  let title="",crumb="",body="";
+  if(d.t==="p"){const m=P[d.k],s=st(m),p=pred(m),dv=dev(m),tr=trendOf(m),sg=STAGES.find(x=>x.id===m.s)||ESTG.find(x=>x.id===m.s);
+    title=m.l;crumb=sg?sg.n:({prod:"Production",cost:"Energy & cost",eq:"Equipment",etpd:"ETP discharge",water:"Water & reuse"})[m.s];
+    const e=etaMin(m),conf=Math.round(55+40*reg(m).r2);
+    body=`<div class="big"><span class="v ${s==="ok"?"":s}">${f(m)}<small>${m.u}</small></span>${stx(s)}<span class="small">${tr[1]} ${tr[0]}</span></div>
+      <div class="kv"><div><span>Spec</span><b>${spec(m)}</b></div><div><span>Ideal</span><b>${f(m,m.id)}</b></div><div><span>Deviation</span><b>${dv>=0?"+":""}${dv.toFixed(1)}%</b></div><div><span>In 6 min</span><b class="${stOf(p,m)==="ok"?"":"st "+stOf(p,m)}">${f(m,p)}</b></div></div>
+      <section class="panel"><header><h2>Trend · last 24 min</h2><span class="h">band = spec · dashed = ideal · dotted = prediction</span></header><div class="chart" id="chartbox">${trend(m)}</div></section>
+      <div class="do"><b>What to do</b>${act(d.k)}<div class="small" style="margin-top:4px">${s!=="crit"&&e!=null&&e<60?`At the current rate it reaches the limit in about ${Math.round(e)} min · `:""}prediction confidence ${conf}% · standard: ${m.std}</div></div>`;
+    const rel=Object.keys(P).filter(k=>P[k].s===m.s&&k!==d.k);
+    if(rel.length) body+=`<section class="panel"><header><h2>Same stage</h2></header>${rows(rel)}</section>`;
+  } else if(d.t==="stage"){const sg=STAGES.find(x=>x.id===d.k);title=sg.n;crumb="Line stage "+(STAGES.indexOf(sg)+1)+" of 11";
+    body=`<div class="big">${stx(worst(stageKeys(sg)))}</div><section class="panel">${paramTable(stageKeys(sg),false)}</section>`+(sg.etp?`<button class="ibtn" type="button" data-sec="etp">Open ETP section</button>`:"");
+  } else if(d.t==="estage"){const sg=ESTG.find(x=>x.id===d.k);title=sg.n;crumb="ETP stage "+(ESTG.indexOf(sg)+1)+" of 10";
+    body=`<div class="big">${stx(worst(keysOf(sg.id)))}</div><section class="panel">${paramTable(keysOf(sg.id),false)}</section>`;
+  } else if(d.t==="risk"){const r=RISKS.find(x=>x.id===d.k),x=risk(r);title=r.n;crumb=r.eng+" · "+r.stage;
+    body=`<div class="big"><span class="v ${x.lvl==="ok"?"":x.lvl}">${Math.round(x.p)}<small>% probability</small></span>${stx(x.lvl,LVL[x.lvl]+" risk")}</div>
+      <div class="kv"><div><span>Expected in</span><b>${x.eta==null?"–":x.eta===0?"now":Math.round(x.eta)+" min"}</b></div><div><span>Confidence</span><b>${x.conf}%</b></div><div><span>Main driver</span><b>${P[x.drv].l}</b></div><div><span>Drivers</span><b>${r.k.length}</b></div></div>
+      <div class="do"><b>Recommended action</b>${r.fix}</div><div class="do"><b>Poka-yoke</b>${r.poka}</div>
+      <section class="panel"><header><h2>Drivers</h2><span class="h">Click for trend</span></header>${rows(r.k)}</section>`;
+  } else if(d.t==="alerts"){const al=alerts();title="Alerts";crumb=al.length+" open";body=`<section class="panel">${alertList(al)}</section>`;
+  } else if(d.t==="exec"){title="Executive report";crumb="Shift B · "+new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+    const o=oee(),rk=RISKS.map(r=>({r,x:risk(r)})).sort((a,b)=>b.x.p-a.x.p).slice(0,3),al=alerts().filter(a=>a.k&&a.s!=="info").slice(0,3);
+    body=`<div class="kv"><div><span>OEE</span><b>${o.O.toFixed(1)}%</b></div><div><span>First-pass yield</span><b>${f(P.fpy)}%</b></div><div><span>Plated</span><b>${Math.round(plated).toLocaleString("en-IN")} kg</b></div><div><span>Cost</span><b>₹${f(P.cost)}/kg</b></div></div>
+      <div class="kv"><div><span>Scrap</span><b>${scrap().toFixed(2)}%</b></div><div><span>Bath health</span><b>${bathHealth().toFixed(0)}/100</b></div><div><span>Energy</span><b>${f(P.kwh)} kWh/kg</b></div><div><span>ETP compliance</span><b>${etpComp().toFixed(0)}%</b></div></div>
+      <section class="panel"><header><h2>Top risks</h2></header>${tbl(["Risk","Probability","Action"],rk.map(({r,x})=>`<tr class="click" data-risk="${r.id}"><td>${r.n}</td><td>${probBar(x.p,x.lvl)}</td><td class="w small">${r.fix}</td></tr>`))}</section>
+      <section class="panel"><header><h2>Actions for next shift</h2></header>${al.length?`<ol class="olist">${al.map(a=>`<li><b>${P[a.k].l}</b> · ${act(a.k)}</li>`).join("")}</ol>`:`<div class="pad small">No open parameter issues.</div>`}</section>
+      <p class="small">Generated from live line data. On the real system this exports as a PDF and goes out by email every Monday.</p>`;
+  }
+  const back=d.stack&&d.stack.length?`<button class="ibtn" type="button" data-back>← Back</button>`:"";
+  return `<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="${title}"><div class="dh">${back}<div><div class="crumb">${crumb}</div><h2>${title}</h2></div><button class="ibtn close" type="button" data-close aria-label="Close">Close ✕</button></div><div class="db">${body}</div></aside>`;
+}
+function trend(m){
+  const W=520,H=210,L=48,R=10,T=10,Bm=22,a=m.h,p=pred(m),ext=12,N=a.length-1+ext;
+  const lo=Math.min(m.min,...a,p),hi=Math.max(m.max,...a,p);
+  const x=i=>L+i*(W-L-R)/N,y=v=>T+(hi-v)/(hi-lo)*(H-T-Bm);
+  const step=nice((hi-lo)/4),ticks=[];for(let t=Math.ceil(lo/step)*step;t<=hi+1e-9;t+=step)ticks.push(t);
+  const s=st(m),c=s==="ok"?"var(--ink-2)":`var(--${s})`,last=a.length-1;
+  let g=`<svg viewBox="0 0 ${W} ${H}" id="trend" role="img" aria-label="${m.l} trend">`;
+  g+=`<rect x="${L}" y="${y(m.hi??hi)}" width="${W-L-R}" height="${y(m.lo??lo)-y(m.hi??hi)}" fill="var(--band)"/>`;
+  g+=`<g class="ax">`+ticks.map(t=>`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line-2)"/><text x="${L-6}" y="${y(t)+3.5}" text-anchor="end">${(+t.toFixed(step<.1?2:step<1?1:0)).toLocaleString("en-IN")}</text>`).join("")+`<text x="${L}" y="${H-5}">−24 min</text><text x="${x(last)}" y="${H-5}" text-anchor="middle">now</text><text x="${W-R}" y="${H-5}" text-anchor="end">+6</text></g>`;
+  g+=`<line x1="${x(last)}" x2="${x(last)}" y1="${T}" y2="${H-Bm}" stroke="var(--line)"/>`;
+  g+=`<line x1="${L}" x2="${W-R}" y1="${y(m.id)}" y2="${y(m.id)}" stroke="var(--band-edge)" stroke-dasharray="5 3"/>`;
+  g+=`<polyline points="${a.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ")}" fill="none" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>`;
+  g+=`<line x1="${x(last)}" y1="${y(a[last])}" x2="${x(N)}" y2="${y(p)}" stroke="${c}" stroke-dasharray="1.5 3" stroke-width="1.6"/><circle cx="${x(N)}" cy="${y(p)}" r="3" fill="none" stroke="${c}" stroke-width="1.4"/>`;
+  g+=`<circle cx="${x(last)}" cy="${y(a[last])}" r="3.5" fill="${c}"/>`;
+  if(S.hover!=null){const i=S.hover;g+=`<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H-Bm}" stroke="var(--muted)"/><circle cx="${x(i)}" cy="${y(a[i])}" r="3.5" fill="${c}" stroke="var(--surface)" stroke-width="1.5"/>`;}
+  g+=`<rect x="${L}" y="${T}" width="${x(last)-L}" height="${H-T-Bm}" fill="transparent"/>`;
+  return g+`</svg>`;
+}
+function nice(r){const p=Math.pow(10,Math.floor(Math.log10(r))),n=r/p;return (n<1.5?1:n<3?2:n<7?5:10)*p;}
 
 /* ---------- render ---------- */
-function timeStr(){return new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});}
-function render(){
+const V={cc:vCC,prod:vProd,quality:vQuality,chem:vChem,etp:vEtp,maint:vMaint,entry:vEntry,reports:vReports,settings:vSettings};
+function now(){return new Date().toLocaleTimeString("en-IN",{hour12:false});}
+function isEditing(){const a=document.activeElement;return a&&(a.tagName==="INPUT"||a.tagName==="SELECT")&&$("main").contains(a);}
+function render(full){
   renderRail();
-  const main=document.getElementById("main");
-  let h;
-  if(S.view==="overview")h=vOverview();
-  else if(S.view==="alerts")h=vAlerts();
-  else if(S.view==="line")h=vLine();
-  else h=vModule(MODS.find(m=>m.id===S.view));
-  main.innerHTML=h;
-  document.getElementById("clock").textContent=timeStr().slice(0,5);
-  document.getElementById("shdone").textContent=Math.round(plated).toLocaleString("en-IN")+" kg";
-  document.getElementById("shfill").style.width=Math.min(100,plated/9800*100)+"%";
+  $("bellct").textContent=alerts().filter(a=>a.s!=="info").length;
+  if(full||!(S.sec==="entry"||isEditing()||(S.sec==="quality"&&S.tab===3)||S.sec==="settings"||S.sec==="reports")) $("main").innerHTML=V[S.sec]();
+  renderDrawer();
 }
-function go(id,sel){ S.view=id; S.sel=sel||null; S.hover=null; hideTip(); render(); window.scrollTo({top:0}); }
+function renderDrawer(){const r=$("drawerRoot");const sc=r.querySelector(".db");const top=sc?sc.scrollTop:0;r.innerHTML=drawerHTML();const n=r.querySelector(".db");if(n)n.scrollTop=top;}
+function openD(t,k,push){const stack=push&&S.drawer?(S.drawer.stack||[]).concat([{t:S.drawer.t,k:S.drawer.k}]):[];S.drawer={t,k,stack};S.hover=null;renderDrawer();if(!push){const b=$("drawerRoot").querySelector(".close");if(b)b.focus({preventScroll:true});}}
+function closeD(){S.drawer=null;S.hover=null;$("tip").hidden=true;renderDrawer();}
+function goSec(id,tab){S.sec=id;S.tab=+tab||0;closeD();render(true);window.scrollTo({top:0});}
+function toast(t){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400);}
+function exportCSV(){
+  const q=v=>`"${String(v).replace(/"/g,'""')}"`;
+  const rowsx=[["Area","Parameter","Actual","Unit","Spec","Ideal","Deviation %","Predicted +6 min","Trend","Standard","Status"]];
+  for(const k in P){const m=P[k],sg=STAGES.find(x=>x.id===m.s)||ESTG.find(x=>x.id===m.s);rowsx.push([sg?sg.n:m.s,m.l,f(m).replace(/,/g,""),m.u,spec(m),f(m,m.id).replace(/,/g,""),dev(m).toFixed(1),f(m,pred(m)).replace(/,/g,""),trendOf(m)[0],m.std,W[st(m)]]);}
+  const csv=rowsx.map(r=>r.map(q).join(",")).join("\n");
+  try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="processgrit-parameters-"+new Date().toISOString().slice(0,16).replace(/[:T]/g,"-")+".csv";document.body.appendChild(a);a.click();a.remove();toast("CSV export started · "+(rowsx.length-1)+" parameters");}
+  catch(e){toast("Export isn't available in this preview");}
+}
 
 document.addEventListener("click",e=>{
-  const hc=e.target.closest("[data-hideconcept]"); if(hc){S.showConcept=false; try{localStorage.setItem("pg_concept_hide","1");}catch(_){} render(); return;}
-  const sel=e.target.closest(".prow[data-sel]"); if(sel){S.sel=sel.dataset.sel; S.hover=null; render(); return;}
-  const g=e.target.closest("[data-go]"); if(g){ go(g.dataset.go, g.dataset.sel); }
+  const el=e.target.closest("[data-theme-set],[data-close],[data-back],[data-open],[data-p],[data-stage],[data-estage],[data-risk],[data-sec],[data-tab],[data-toast],[data-csv]");
+  if(!el)return;
+  if(el.dataset.themeSet){setTheme(el.dataset.themeSet);return;}
+  if(el.hasAttribute("data-close")){closeD();return;}
+  if(el.hasAttribute("data-back")){const p=S.drawer.stack.pop();S.drawer={t:p.t,k:p.k,stack:S.drawer.stack};S.hover=null;renderDrawer();return;}
+  if(el.hasAttribute("data-csv")){exportCSV();return;}
+  if(el.dataset.toast){toast(el.dataset.toast);return;}
+  const inD=!!el.closest(".drawer");
+  if(el.dataset.open){openD(el.dataset.open,null,false);return;}
+  if(el.dataset.p){openD("p",el.dataset.p,inD);return;}
+  if(el.dataset.stage){openD("stage",el.dataset.stage,inD);return;}
+  if(el.dataset.estage){openD("estage",el.dataset.estage,inD);return;}
+  if(el.dataset.risk){openD("risk",el.dataset.risk,inD);return;}
+  if(el.dataset.sec){goSec(el.dataset.sec,el.dataset.tab);return;}
+  if(el.dataset.tab!=null&&el.classList.contains("tab")){S.tab=+el.dataset.tab;render(true);return;}
 });
-document.addEventListener("keydown",e=>{ if((e.key==="Enter"||e.key===" ")&&e.target.matches("li[data-go]")){e.preventDefault();go(e.target.dataset.go);} });
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&S.drawer){closeD();return;}
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches("li[data-p],li[data-sec],tr.click")){e.preventDefault();e.target.click();}
+});
+document.addEventListener("input",e=>{if(e.target.id==="lotq"){S.q=e.target.value;const pos=e.target.selectionStart;$("main").innerHTML=V[S.sec]();const n=$("lotq");n.focus();n.setSelectionRange(pos,pos);}});
+document.addEventListener("submit",e=>{if(e.target.id!=="tform")return;e.preventDefault();
+  const v=id=>$(id).value.trim();const t=new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:false});
+  TITR.push([t,v("e_zn"),v("e_kcl"),v("e_bor"),v("e_ph"),v("e_by"),v("e_add")||"None"]);
+  AUDIT.unshift([t,v("e_by"),"Titration","Zn "+v("e_zn")+" · KCl "+v("e_kcl")+" · pH "+v("e_ph")]);
+  toast("Reading saved to Chemistry and audit trail");render(true);});
+$("scn").addEventListener("change",e=>{scenario=e.target.value;toast(scenario==="normal"?"Back to normal running":"Scenario injected · watch the risk register and alerts");});
+$("pause").addEventListener("click",()=>{S.paused=!S.paused;$("live").classList.toggle("paused",S.paused);$("livetxt").textContent=S.paused?"PAUSED · SIMULATED":"LIVE · SIMULATED";});
 
 /* hover on trend */
-const tip=document.getElementById("tip");
-function hideTip(){tip.hidden=true;}
 document.addEventListener("pointermove",e=>{
-  const svg=document.getElementById("trend");
-  if(!svg||!svg.contains(e.target)){ if(S.hover!=null){S.hover=null; hideTip(); const cb=document.getElementById("chartbox"); if(cb&&S.sel) cb.innerHTML=trend(M[S.sel]);} return; }
-  const r=svg.getBoundingClientRect(), W=640,L=48,R=14, m=M[S.sel];
-  const px=(e.clientX-r.left)/r.width*W; const i=Math.round((px-L)/((W-L-R)/(m.h.length-1)));
-  const idx=clamp(i,0,m.h.length-1);
-  if(idx!==S.hover){ S.hover=idx; document.getElementById("chartbox").innerHTML=trend(m); }
-  const cb=document.getElementById("chartbox").getBoundingClientRect();
-  tip.hidden=false; tip.style.position="fixed";
-  tip.innerHTML=`<b>${fmt(m,m.h[idx])} ${m.u}</b> · ${idx===m.h.length-1?"now":"−"+(m.h.length-1-idx)+" readings"}`;
-  const vx=r.left+(L+idx*(W-L-R)/(m.h.length-1))/W*r.width;
-  tip.style.left=clamp(vx,cb.left+60,cb.right-60)+"px"; tip.style.top=(r.top+10)+"px"; tip.style.transform="translate(-50%,0)";
+  const svg=$("trend"),tip=$("tip");
+  if(!svg||!svg.contains(e.target)||!S.drawer||S.drawer.t!=="p"){if(S.hover!=null){S.hover=null;tip.hidden=true;const cb=$("chartbox");if(cb&&S.drawer&&S.drawer.t==="p")cb.innerHTML=trend(P[S.drawer.k]);}return;}
+  const m=P[S.drawer.k],r=svg.getBoundingClientRect(),Wd=520,L=48,R=10,N=m.h.length-1+12;
+  const i=clamp(Math.round(((e.clientX-r.left)/r.width*Wd-L)/((Wd-L-R)/N)),0,m.h.length-1);
+  if(i!==S.hover){S.hover=i;$("chartbox").innerHTML=trend(m);}
+  const ago=(m.h.length-1-i)*RD;
+  tip.hidden=false;tip.textContent=`${f(m,m.h[i])} ${m.u} · ${ago===0?"now":"−"+(ago%1?ago.toFixed(1):ago)+" min"}`;
+  tip.style.left=clamp(e.clientX,r.left+70,r.right-70)+"px";tip.style.top=(r.top+6)+"px";
 });
 
-/* ---------- sim engine ---------- */
-function healthNow(){return clamp(100-alerts().filter(a=>a.s!=="info").reduce((s,a)=>s+(a.s==="crit"?6:2),0)-3,60,100);}
-(function seedHealth(){const h=healthNow(); const m=M.health; m.v=m.base=h; m.h=m.h.map((_,i)=>clamp(h+rnd()*1.2,60,100)); m.h[HN-1]=h;})();
+/* theme */
+function setTheme(t){document.documentElement.setAttribute("data-theme",t);document.querySelectorAll("[data-theme-set]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.themeSet===t)));try{localStorage.setItem("pg_theme",t);}catch(e){}}
+let t0=null;try{t0=localStorage.getItem("pg_theme");}catch(e){}
+if(t0)setTheme(t0);else document.querySelectorAll("[data-theme-set]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.themeSet===(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"))));
+
+/* sim */
 function tick(){
-  for(const k in M){ const m=M[k];
-    let v=m.v + rnd()*m.sd + (m.up||0) + (m.base-m.v)*(m.up?0.004:.06);
-    if(m.up && Math.abs(v-m.base)>(m.hi-m.lo)*.25) v=m.base; // reset slow drifts so the demo loops
-    m.v=clamp(v,m.min,m.max); m.h.push(m.v); if(m.h.length>HN)m.h.shift();
-  }
-  B.forEach(b=>{ if(b.idle)return; b.left-=.05; b.amp+=rnd()*4; b.cd=clamp(b.cd+rnd()*.012,.8,1.55); if(b.left<=0){b.left=35;} });
-  plated+=M.thru.v*3/3600*20; if(plated>9800)plated=5120;
-  M.health.v=clamp(healthNow()+rnd()*.8,60,100);
-  M.health.h[M.health.h.length-1]=M.health.v;
-  render();
+  const goals=SCN[scenario]||{};
+  for(const k in P){const m=P[k];let v;
+    if(goals[k]!=null) v=m.v+(goals[k]-m.v)*.3+rnd()*m.sd;
+    else{v=m.v+rnd()*m.sd+(scenario==="normal"?(m.up||0):0)+(m.base-m.v)*(m.up&&scenario==="normal"?.003:.08);
+      if(m.up&&Math.abs(v-m.base)>((m.hi??m.max)-(m.lo??m.min))*.28)v=m.base;}
+    m.v=clamp(v,m.min,m.max);m.h.push(m.v);if(m.h.length>HN)m.h.shift();if(m.j){m.j.push(gauss()*m.js);m.j.shift();}}
+  B.forEach(b=>{if(b.idle)return;b.left-=.5;if(b.left<=0)b.left=35;b.amp+=rnd()*3;
+    b.cd=clamp(b.cd+rnd()*.01+(scenario==="bath"&&b.id==="Z6"?.03:0)+(1.1-b.cd)*(scenario==="bath"?0:.05),.8,1.6);});
+  plated+=P.thru.v*3/3600*20;if(plated>9800)plated=5120;
+  render(false);
 }
-let timer=setInterval(()=>{ if(!S.paused) tick(); },3000);
-document.getElementById("simbtn").addEventListener("click",()=>{
-  S.paused=!S.paused; document.getElementById("simbtn").textContent=S.paused?"Resume":"Pause";
-  document.getElementById("sim").classList.toggle("paused",S.paused);
-  document.getElementById("simtxt").textContent=S.paused?"Demo data · paused":"Demo data · simulated";
-});
-render();
+setInterval(()=>{$("clock").textContent=now();if(!S.paused)tick();},3000);
+$("clock").textContent=now();
+render(true);
 })();
+
 </script>
 </body>
 </html>
